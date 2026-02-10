@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inventario — BodegaFlow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/inventory.css" />
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-logo">BodegaFlow</div>
+
+    <nav class="nav-links">
+      <a href="pos.html">POS</a>
+      <a href="inventory.html" class="active">Inventario</a>
+      <a href="ventas.html">Ventas</a>
+      <a href="pagomovil.html">Pago móvil</a>
+      <a href="login.html">Login</a>
+      <a href="deudas.html">Deudas</a>
+    </nav>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <section class="inventory-container">
+
+    <div class="inventory-header">
+      <h1>Inventario</h1>
+      <button class="btn-primary" id="addProductBtn">Agregar producto</button>
+    </div>
+
+    <input 
+      type="text" 
+      id="searchInput" 
+      class="search-input" 
+      placeholder="Buscar producto..."
+    />
+
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody id="inventoryBody"></tbody>
+    </table>
+
+  </section>
+
+  <!-- MODAL CREAR / EDITAR PRODUCTO -->
+  <div class="modal-overlay" id="productOverlay"></div>
+
+  <div class="modal" id="productModal">
+    <h3 id="modalTitle">Nuevo producto</h3>
+
+   <label class="modal-label">Nombre del producto</label>
+<input type="text" id="pName" class="modal-input" />
+
+<label class="modal-label">Categoría</label>
+<input type="text" id="pCategory" class="modal-input" />
+
+<label class="modal-label">Precio (Bs)</label>
+<input type="number" id="pPrice" class="modal-input" />
+
+<label class="modal-label">Stock disponible</label>
+<input type="number" id="pStock" class="modal-input" />
+
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="cancelProduct">Cancelar</button>
+      <button class="modal-btn primary" id="saveProduct">Guardar</button>
+    </div>
+  </div>
+
+  <!-- MODAL AJUSTAR STOCK -->
+  <div class="modal-overlay" id="stockOverlay"></div>
+
+  <div class="modal" id="stockModal">
+    <h3>Ajustar stock</h3>
+
+    <p id="stockProductName"></p>
+
+    <input type="number" id="stockAmount" class="modal-input" placeholder="Cantidad (+ o -)" />
+
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="cancelStock">Cancelar</button>
+      <button class="modal-btn primary" id="saveStock">Aplicar</button>
+    </div>
+  </div>
+
+  <script src="../js/inventory.js"></script>
+</body>
+</html>

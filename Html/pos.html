@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>POS — BodegaFlow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/pos-bodega.css" />
+</head>
+
+<body>
+
+  <header class="nav">
+    <div class="nav-logo">BodegaFlow</div>
+
+    <nav class="nav-links">
+      <a href="pos.html" class="active">POS</a>
+      <a href="inventory.html">Inventario</a>
+      <a href="ventas.html">Ventas</a>
+      <a href="pagomovil.html">Pago móvil</a>
+      <a href="deudas.html">Deudas</a>
+    </nav>
+  </header>
+
+  <section class="pos-container">
+
+    <div class="pos-left">
+      <input type="text" id="posSearch" class="pos-search" placeholder="Buscar producto..." />
+      <div class="pos-products" id="posProducts"></div>
+    </div>
+
+    <div class="pos-right">
+      <div class="ticket-header">
+        <h3>Venta actual</h3>
+        <span class="ticket-tag" id="ticketTag">Sin pago</span>
+      </div>
+
+      <div class="ticket-items" id="ticketItems"></div>
+
+      <div class="ticket-summary">
+        <div class="ticket-row">
+          <span>Total</span>
+          <span id="ticketTotal">0,00 Bs</span>
+        </div>
+
+        <div class="ticket-pay-methods">
+          <button class="pay-btn" data-method="efectivo">Efectivo</button>
+          <button class="pay-btn" data-method="pago_movil">Pago móvil</button>
+          <button class="pay-btn" data-method="mixto">Mixto</button>
+        </div>
+
+        <button class="btn-primary ticket-btn" id="ticketCheckout">
+          Registrar venta
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- MODAL PAGO MÓVIL -->
+  <div class="modal-overlay" id="pmOverlay"></div>
+  <div class="modal" id="pmModal">
+    <h3>Datos de pago móvil</h3>
+
+    <input type="text" id="pmBanco" class="modal-input" placeholder="Banco" />
+    <input type="text" id="pmReferencia" class="modal-input" placeholder="Referencia" />
+    <input type="number" id="pmMonto" class="modal-input" placeholder="Monto recibido" />
+
+    <div class="modal-actions">
+      <button id="pmCancel" class="modal-btn secondary">Cancelar</button>
+      <button id="pmConfirm" class="modal-btn primary">Confirmar</button>
+    </div>
+  </div>
+
+  <!-- MODAL ERROR -->
+  <div class="modal-overlay" id="errorOverlay"></div>
+  <div class="modal" id="errorModal">
+    <h3>Error</h3>
+    <div id="errorMessage" style="margin-top:0.5rem;color:#fca5a5"></div>
+    <div class="modal-actions">
+      <button id="errorClose" class="modal-btn primary">Cerrar</button>
+    </div>
+  </div>
+
+  <script src="../js/pos-bodega.js"></script>
+</body>
+</html>

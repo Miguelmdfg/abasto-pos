@@ -1,0 +1,235 @@
+/* CONTENEDOR PRINCIPAL DEL POS */
+.pos-container {
+  display: grid;
+  grid-template-columns: 1.7fr 1.3fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+/* IZQUIERDA: LISTA DE PRODUCTOS */
+.pos-left {
+  background: #020617;
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(148,163,184,0.3);
+}
+
+.pos-search {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.6);
+  background: #020617;
+  color: #e5e7eb;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.pos-products {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 1.8fr 0.7fr 0.6fr;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(30,41,59,0.9);
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.product-name {
+  font-weight: 500;
+}
+
+.product-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.product-price {
+  font-weight: 600;
+  color: #facc15;
+}
+
+.product-add {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.7);
+  background: #020617;
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* DERECHA: TICKET */
+.pos-right {
+  background: #020617;
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(148,163,184,0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ticket-tag {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.2);
+  color: #e5e7eb;
+}
+
+.ticket-items {
+  margin-top: 1rem;
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid rgba(30,41,59,0.9);
+  border-bottom: 1px solid rgba(30,41,59,0.9);
+}
+
+.ticket-row-item {
+  display: grid;
+  grid-template-columns: 1.6fr 0.6fr 0.6fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+}
+
+.ticket-summary {
+  margin-top: 1rem;
+}
+
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.ticket-pay-methods {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.pay-btn {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.7);
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.pay-btn.active {
+  background: #facc15;
+  color: #111827;
+  border-color: #facc15;
+}
+
+.ticket-btn {
+  width: 100%;
+  padding: 0.8rem;
+}
+
+/* MODAL PAGO MÓVIL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 320px;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: #020617;
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,0.6);
+  padding: 1.2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+}
+
+.modal.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-input {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.modal-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.7);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.modal-btn.primary {
+  background: #facc15;
+  color: #111827;
+  border-color: #facc15;
+}
+
+.modal-btn.secondary {
+  background: #020617;
+  color: #e5e7eb;                               
+}
+
+/* Low stock marker */
+.product-row.low-stock {
+  background: rgba(220,38,38,0.06);
+  border-left: 4px solid rgba(220,38,38,0.8);
+}
+
+.stock-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(220,38,38,0.12);
+  color: #fecaca;
+  font-size: 0.75rem;
+}
