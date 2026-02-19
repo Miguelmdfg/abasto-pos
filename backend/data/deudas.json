@@ -1,0 +1,24 @@
+[
+  {
+    "id": "mlchbrh116tx2a",
+    "name": "miguekito",
+    "phone": "04123350636",
+    "products": [
+      {
+        "name": "cigarros",
+        "amount": 500
+      }
+    ]
+  },
+  {
+    "id": "mlbavbyzilmdai",
+    "name": "miguel",
+    "phone": "04123350635",
+    "products": [
+      {
+        "name": "cigarros",
+        "amount": 500
+      }
+    ]
+  }
+]
