@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ventas — BodegaFlow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/inventory.css" />
+
+  <style>
+    .ventas-container {
+      padding: 2rem;
+    }
+
+    .ventas-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ventas-summary {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .ventas-card {
+      background: #1e293b;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+      flex: 1;
+    }
+
+    .ventas-card h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #facc15;
+    }
+
+    .ventas-card p {
+      margin: 0.5rem 0 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .ventas-filter {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .ventas-input {
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: #0f172a;
+      color: #e2e8f0;
+      flex: 1;
+    }
+
+    .ventas-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+
+    .ventas-table th,
+    .ventas-table td {
+      padding: 0.9rem;
+      border-bottom: 1px solid rgba(148,163,184,0.1);
+      font-size: 0.9rem;
+    }
+
+    .ventas-table th {
+      background: rgba(255,255,255,0.05);
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-logo">BodegaFlow</div>
+
+    <nav class="nav-links">
+      <a href="pos.html">POS</a>
+      <a href="inventory.html">Inventario</a>
+      <a href="ventas.html" class="active">Ventas</a>
+      <a href="pagomovil.html">Pago móvil</a>
+      <a href="login.html">Login</a>
+      <a href="deudas.html">Deudas</a>
+    </nav>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <section class="ventas-container">
+
+    <div class="ventas-header">
+      <h1>Historial de ventas</h1>
+    </div>
+
+    <!-- TARJETAS DE RESUMEN -->
+    <div class="ventas-summary">
+      <div class="ventas-card">
+        <h3>Ventas del día</h3>
+        <p id="ventasDia">0 Bs</p>
+      </div>
+
+      <div class="ventas-card">
+        <h3>Ventas del mes</h3>
+        <p id="ventasMes">0 Bs</p>
+      </div>
+
+      <div class="ventas-card">
+        <h3>Total transacciones</h3>
+        <p id="ventasCount">0</p>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="ventas-filter">
+      <input type="date" id="ventasDate" class="ventas-input" />
+      <input type="text" id="ventasSearch" class="ventas-input" placeholder="Buscar por producto o método de pago..." />
+    </div>
+
+    <!-- TABLA -->
+    <table class="ventas-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Productos</th>
+          <th>Método</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody id="ventasBody"></tbody>
+    </table>
+
+  </section>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+
+    let ventas = [];
+    let productsMap = {};
+
+    const ventasBody = document.getElementById("ventasBody");
+    const ventasDate = document.getElementById("ventasDate");
+    const ventasSearch = document.getElementById("ventasSearch");
+
+    const ventasDia = document.getElementById("ventasDia");
+    const ventasMes = document.getElementById("ventasMes");
+    const ventasCount = document.getElementById("ventasCount");
+
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API_URL}/products`);
+        const list = await res.json();
+        productsMap = {};
+        list.forEach(p => { productsMap[p.id] = p.name; });
+      } catch (e) {
+        console.error('No se pudo cargar productos:', e);
+      }
+    }
+
+    function productosToString(prod) {
+      if (!prod) return '';
+      if (typeof prod === 'string') return prod;
+      if (Array.isArray(prod)) {
+        return prod.map(item => {
+          const qty = item.qty || item.quantity || 0;
+          const name = item.name || productsMap[item.id] || (`id:${item.id}`);
+          return `${name} x${qty}`;
+        }).join(', ');
+      }
+      return String(prod);
+    }
+
+    function renderVentas(filterText = '', filterDate = '') {
+      ventasBody.innerHTML = '';
+
+      let totalDia = 0;
+      let totalMes = 0;
+      let count = 0;
+
+      const hoy = new Date().toISOString().slice(0, 10);
+      const mesActual = hoy.slice(0, 7);
+
+      ventas
+        .filter(v => {
+          const prodStr = productosToString(v.productos).toLowerCase();
+          const metodoStr = (v.metodo || '').toLowerCase();
+          const matchesText = prodStr.includes(filterText.toLowerCase()) || metodoStr.includes(filterText.toLowerCase());
+          const matchesDate = filterDate ? v.fecha === filterDate : true;
+          return matchesText && matchesDate;
+        })
+        .forEach(v => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${v.fecha}</td>
+            <td>${productosToString(v.productos)}</td>
+            <td>${v.metodo || ''}</td>
+            <td>${v.total} Bs</td>
+          `;
+          ventasBody.appendChild(row);
+
+          if (v.fecha === hoy) totalDia += Number(v.total || 0);
+          if (v.fecha && v.fecha.startsWith(mesActual)) totalMes += Number(v.total || 0);
+          count++;
+        });
+
+      ventasDia.textContent = totalDia + ' Bs';
+      ventasMes.textContent = totalMes + ' Bs';
+      ventasCount.textContent = count;
+    }
+
+    async function loadVentas() {
+      await loadProducts();
+      try {
+        const res = await fetch(`${API_URL}/sales`);
+        ventas = await res.json();
+        // normalize date format if needed (keep YYYY-MM-DD)
+        ventas = ventas.map(v => ({ ...v, fecha: (v.fecha || '').slice(0,10) }));
+        renderVentas();
+      } catch (e) {
+        console.error('Error cargando ventas:', e);
+      }
+    }
+
+    ventasSearch.addEventListener('input', () => renderVentas(ventasSearch.value, ventasDate.value));
+    ventasDate.addEventListener('change', () => renderVentas(ventasSearch.value, ventasDate.value));
+
+    loadVentas();
+  </script>
+
+</body>
+</html>
