@@ -1,11 +1,12 @@
 1. VISIÓN GENERAL DEL SISTEMA
 
-El sistema es una plataforma integral de gestión comercial orientada a negocios minoristas que requieren control de inventario, facturación, gestión de deudas, análisis financiero y administración operativa.
+El sistema es una plataforma integral de gestión comercial orientada a negocios minoristas que requieren control de inventario, facturación individul, con calculo de IVA al finalizar la facturacion, gestión de deudas, análisis financiero y administración operativa.
 
 Su diseño está basado en separación clara de roles, control centralizado de información y automatización de procesos críticos como:
 	•	Descuento automático de inventario
 	•	Registro estructurado de ventas
 	•	Gestión de pagos múltiples
+	calculo de impuestos
 	•	Control de deudas
 	•	Cierres diarios de caja
 	•	Análisis de desempeño comercial
@@ -101,6 +102,8 @@ Sección derecha:
 	•	Subtotales
 	•	Total general en ambas monedas
 	•	Conversión automática según tasa del día
+	• 	Botones de "Pago movil"; "Efectivo $"; "Efectivo bs"; "Punto de venta"; "Mixto"
+	• 	Boton de Cierre de caja
 
 ⸻
 
@@ -141,6 +144,7 @@ Funcionalidades
 	•	Visualizar historial de movimientos
 	•	Consultar precios y costos
 	•	Control de inventario en ambas monedas
+	•  	Carga de documento tipo excel para el inventario 
 
 ⸻
 
@@ -182,6 +186,7 @@ Información mostrada
 	•	Total de abonos
 	•	Cantidad de ventas
 	•	Responsable del cierre
+	•  	Al final se debe mostrar cuanto debe haber recolectado en cada uno de los metodos de pago 
 
 Funcionalidades
 	•	Filtros por período
