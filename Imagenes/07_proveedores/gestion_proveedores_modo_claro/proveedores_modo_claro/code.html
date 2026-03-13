@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Supplier Management System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shrink-0 h-full">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary rounded-lg p-1.5 text-white">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+</div>
+<div>
+<h1 class="text-base font-bold tracking-tight">SaaS Corp</h1>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-widest leading-none">Enterprise Suite</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+<div class="pb-4">
+<p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Main Menu</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">inventory_2</span>
+<span class="text-sm font-semibold">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">point_of_sale</span>
+<span class="text-sm font-semibold">POS</span>
+</a>
+</div>
+<div class="pb-4">
+<p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Finance &amp; Operations</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">payments</span>
+<span class="text-sm font-semibold">Debt</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">bar_chart</span>
+<span class="text-sm font-semibold">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px] fill-1">local_shipping</span>
+<span class="text-sm font-bold">Suppliers</span>
+</a>
+</div>
+<div class="pb-4">
+<p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Administration</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">group</span>
+<span class="text-sm font-semibold">Users</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-sm font-semibold">Settings</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+<img alt="Profile image of Alex Morgan" class="size-9 rounded-full object-cover border-2 border-white dark:border-slate-700" data-alt="Professional portrait of a male executive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD312tA29HDHL-KpDCjKKD6sCmxwlBVCyIIpSykwD21ZtNEDpw3LYXY-E_GxPxJWbNt9WmxaJMBI0UoRzGFijv8oQ5RrbYa-_P0a6B2S0rWA8m_pI09833vzOLHruROxYvVjA5sCzK3aQ5RztOGFufkPsLVT_aUSyPV8VpoD5Dk6gAjCPYH_8fJu8rD96TipR93_6uE_UXbILiyTDmBjbvPUz4n68OUlmNOkn58dVmVunIAZ2cCDOAc6nldali6FSbpwKGptrwQDQw"/>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Alex Morgan</p>
+<p class="text-[10px] text-slate-500 font-medium truncate uppercase">Admin Level</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer">logout</span>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold text-slate-800 dark:text-white">Suppliers Management</h2>
+<div class="h-4 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="pl-9 pr-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border-none text-sm w-64 focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 transition-all" placeholder="Search suppliers..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20" onclick="document.getElementById('register-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+                    Registrar Compra
+                </button>
+</div>
+</header>
+<!-- Page Scrollable Area -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+<!-- Metric Cards -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="size-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<span class="text-[11px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+12.5%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Total Suppliers</p>
+<h3 class="text-2xl font-bold mt-1">128</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="size-10 rounded-lg bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">list_alt</span>
+</div>
+<span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Active</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Active Orders</p>
+<h3 class="text-2xl font-bold mt-1">42</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="size-10 rounded-lg bg-green-50 dark:bg-green-500/10 flex items-center justify-center text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined">monetization_on</span>
+</div>
+<span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">-2.4%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Monthly Spend</p>
+<h3 class="text-2xl font-bold mt-1">$12,540.00</h3>
+</div>
+</section>
+<!-- Suppliers Table -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="font-bold text-slate-800 dark:text-white">Supplier Directory</h3>
+<button class="text-slate-400 hover:text-slate-600">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50">
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Supplier Name</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Contact Information</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Products Supplied</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Status</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded bg-slate-100 flex items-center justify-center font-bold text-slate-500">GT</div>
+<div>
+<p class="text-sm font-bold">Global Tech Industries</p>
+<p class="text-xs text-slate-400">ID: SUP-2049</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs">mail</span>
+                                            orders@globaltech.com
+                                        </div>
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs">call</span>
+                                            +1 (555) 012-3456
+                                        </div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Hardware</span>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Peripherals</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-md bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-wider border border-green-100">Active</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all" title="View History">
+<span class="material-symbols-outlined text-lg">history</span>
+</button>
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all" title="Edit Supplier">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded bg-slate-100 flex items-center justify-center font-bold text-slate-500">AC</div>
+<div>
+<p class="text-sm font-bold">Acme Corp Ltd</p>
+<p class="text-xs text-slate-400">ID: SUP-1922</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs">mail</span>
+                                            sales@acme.com
+                                        </div>
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs">call</span>
+                                            +1 (555) 987-6543
+                                        </div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Stationery</span>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Furniture</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-md bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-wider border border-green-100">Active</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all" title="View History">
+<span class="material-symbols-outlined text-lg">history</span>
+</button>
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all" title="Edit Supplier">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded bg-slate-100 flex items-center justify-center font-bold text-slate-500">BH</div>
+<div>
+<p class="text-sm font-bold">BioHealth MedSystems</p>
+<p class="text-xs text-slate-400">ID: SUP-3301</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs">mail</span>
+                                            support@biohealth.co
+                                        </div>
+<div class="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs">call</span>
+                                            +44 20 7123 4567
+                                        </div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Sanitation</span>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">PPE</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-md bg-orange-50 text-orange-600 text-[10px] font-bold uppercase tracking-wider border border-orange-100">On Hold</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all" title="View History">
+<span class="material-symbols-outlined text-lg">history</span>
+</button>
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all" title="Edit Supplier">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<p class="text-xs text-slate-500 font-medium">Showing 1 to 3 of 128 results</p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 text-xs font-bold text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:bg-slate-50 transition-all">Previous</button>
+<button class="px-3 py-1.5 text-xs font-bold text-white bg-primary rounded shadow-sm hover:opacity-90 transition-all">Next</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" id="register-modal">
+<div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<div>
+<h3 class="text-lg font-bold">Registrar Nueva Compra</h3>
+<p class="text-xs text-slate-500 font-medium">Llene los detalles para actualizar inventario y deudas.</p>
+</div>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onclick="document.getElementById('register-modal').classList.add('hidden')">
+<span class="material-symbols-outlined text-slate-400">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<form class="p-6 space-y-5">
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-2">
+<label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Supplier</label>
+<div class="relative">
+<select class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary py-2.5">
+<option>Select a supplier...</option>
+<option>Global Tech Industries</option>
+<option>Acme Corp Ltd</option>
+<option>BioHealth MedSystems</option>
+</select>
+</div>
+</div>
+<div class="col-span-2">
+<label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Product</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">inventory</span>
+<input class="w-full pl-10 pr-4 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary py-2.5" placeholder="Search product by name or SKU..." type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Quantity</label>
+<input class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary py-2.5" min="1" type="number" value="1"/>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Unit Cost ($)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">$</span>
+<input class="w-full pl-7 pr-4 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary py-2.5" placeholder="0.00" type="text"/>
+</div>
+</div>
+</div>
+<!-- Toggle -->
+<div class="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">sync</span>
+<div>
+<p class="text-sm font-bold text-primary">Update Inventory</p>
+<p class="text-[10px] text-primary/60 font-medium">Automatically adjust stock levels on save.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</form>
+<!-- Modal Footer -->
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+<button class="px-5 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-200 transition-all" onclick="document.getElementById('register-modal').classList.add('hidden')">Cancelar</button>
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-primary/20">Confirmar Compra</button>
+</div>
+</div>
+</div>
+</body></html>

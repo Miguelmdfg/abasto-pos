@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartAlerts SaaS - Notifications Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-20 lg:w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-[#1a110c] h-screen transition-all">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary size-10 rounded-xl flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<span class="font-bold text-xl hidden lg:block tracking-tight">SmartAlerts</span>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-2">
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium hidden lg:block">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+<span class="font-medium hidden lg:block">Alerts</span>
+<span class="ml-auto bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full hidden lg:block">12</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-medium hidden lg:block">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-medium hidden lg:block">Uptime</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+<div class="size-10 rounded-full bg-slate-300 bg-cover shrink-0" data-alt="User profile avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDXaw6G3v5tTxam9vDAdg63tePo4jFbhruGzlyjY7JWpjMPJn3D23wn-OOQ9xYwea1lrM5Les1RUSCDiQ6lonUMivBBMDm0K054Z2vu2CNPohgBTsVm9ZP7L_7r4S1H-Iy0EudVUrGDZWqh22P4VoDusrr4IA_x2GpLmv7WDuLKuaJBxzN0UAJ493ABmt8otp8Jw4NRh_lK0bSsK0zdvlLOeMx1GQ7Z1z1wRFvY1k1yg3Gfv_9w5fUDpT3fuJnxWEAGQa9v6r45l94')"></div>
+<div class="hidden lg:block overflow-hidden">
+<p class="text-sm font-semibold truncate">Alex Rivera</p>
+<p class="text-xs text-slate-500 truncate">Pro Plan</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 bg-white dark:bg-[#1a110c] shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary/50 text-sm transition-all" placeholder="Search incidents, nodes, or tags..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">done_all</span>
+<span class="hidden sm:inline">Bulk Review</span>
+</button>
+<button class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Notification Content Wrapper -->
+<div class="flex-1 flex overflow-hidden">
+<!-- List Pane -->
+<section class="flex-1 flex flex-col bg-white dark:bg-background-dark overflow-hidden border-r border-slate-200 dark:border-slate-800">
+<div class="flex border-b border-slate-200 dark:border-slate-800 px-8 gap-6 shrink-0">
+<button class="py-4 border-b-2 border-primary text-primary text-sm font-bold flex items-center gap-2">
+                        All <span class="bg-primary/10 px-2 py-0.5 rounded text-[10px]">48</span>
+</button>
+<button class="py-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-sm font-medium">Critical</button>
+<button class="py-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-sm font-medium">Warnings</button>
+<button class="py-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-sm font-medium">Resolved</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
+<!-- Alert Item: Error -->
+<div class="group relative flex items-center gap-4 p-4 bg-white dark:bg-[#2d1e16] border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer border-l-4 border-l-red-500">
+<div class="size-12 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">dangerous</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-bold text-slate-900 dark:text-white truncate">Critical Memory Leak Detected</h3>
+<span class="text-xs text-slate-400">2m ago</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">Service "auth-node-04" has exceeded 95% memory utilization in US-WEST-2.</p>
+</div>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-all">Mark Reviewed</button>
+</div>
+</div>
+<!-- Alert Item: Warning -->
+<div class="group relative flex items-center gap-4 p-4 bg-white dark:bg-[#2d1e16] border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer border-l-4 border-l-amber-500">
+<div class="size-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-bold text-slate-900 dark:text-white truncate">Latancy Spike: API Gateway</h3>
+<span class="text-xs text-slate-400">14m ago</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">P99 latency increased by 40% in the last 10 minutes for /v1/checkout endpoint.</p>
+</div>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-all">Mark Reviewed</button>
+</div>
+</div>
+<!-- Alert Item: Success -->
+<div class="group relative flex items-center gap-4 p-4 bg-white dark:bg-[#2d1e16] border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer border-l-4 border-l-emerald-500">
+<div class="size-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-bold text-slate-900 dark:text-white truncate">Backup Successful</h3>
+<span class="text-xs text-slate-400">1h ago</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">Daily database snapshot (DB-PROD-PRIMARY) completed successfully. Size: 4.2TB.</p>
+</div>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-all">Mark Reviewed</button>
+</div>
+</div>
+<!-- Repeated Item for volume -->
+<div class="group relative flex items-center gap-4 p-4 bg-white dark:bg-[#2d1e16] border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer border-l-4 border-l-red-500">
+<div class="size-12 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">error</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-bold text-slate-900 dark:text-white truncate">SSL Certificate Expiration</h3>
+<span class="text-xs text-slate-400">3h ago</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">The SSL certificate for customer.portal.io expires in less than 48 hours.</p>
+</div>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-all">Mark Reviewed</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Detail Side Panel -->
+<aside class="hidden xl:flex w-[450px] flex-col bg-slate-50 dark:bg-[#1a110c] overflow-y-auto">
+<div class="p-8">
+<div class="flex items-center justify-between mb-6">
+<span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold">CRITICAL</span>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
+<span class="material-symbols-outlined text-sm">share</span>
+</button>
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</div>
+</div>
+<h2 class="text-2xl font-bold mb-2">Memory Leak Detected</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm mb-8">Incident ID: <span class="text-primary font-mono">#ALRT-99201-B</span></p>
+<div class="space-y-6">
+<!-- Technical Details -->
+<div>
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Context Metadata</h4>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-white dark:bg-[#2d1e16] rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-[10px] text-slate-500 mb-1">Host</p>
+<p class="text-sm font-semibold truncate">auth-node-04</p>
+</div>
+<div class="p-3 bg-white dark:bg-[#2d1e16] rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-[10px] text-slate-500 mb-1">Region</p>
+<p class="text-sm font-semibold">us-west-2</p>
+</div>
+<div class="p-3 bg-white dark:bg-[#2d1e16] rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-[10px] text-slate-500 mb-1">Deployment</p>
+<p class="text-sm font-semibold">K8s-Prod-Main</p>
+</div>
+<div class="p-3 bg-white dark:bg-[#2d1e16] rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-[10px] text-slate-500 mb-1">Assigned</p>
+<div class="flex -space-x-2">
+<div class="size-6 rounded-full bg-slate-300 border-2 border-white dark:border-[#2d1e16] bg-cover" data-alt="Team member avatar 1" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAYbreL7wfXkOBKEsNAqcrYVovDYALKBOl8es_Q9xMUyHtWiwRpJtNT4RkJrtCv8YtG9yHilfwA_M-2TMHRXYU_l-6FEog4L2qcEg1urMdMR69Sagyh6roDVQfr5hnFVbE1PXgsEg7QSZHTS_dpIJPCkk4mdqLYYTZbQ3YBC0VxhDhR34fGH6VHEvGWE1Yk2xucVexh5xvu4ELOH-MIZ7KqpHUOc3HhPFXT3UUzYwgkTuyk7Mt6sNowr0tVrPzEd_1hPa3cTffPDoU')"></div>
+<div class="size-6 rounded-full bg-slate-400 border-2 border-white dark:border-[#2d1e16] bg-cover" data-alt="Team member avatar 2" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAnjaoUL_Be3rzaR3xkBH7QilukstHheSSpiv-Zb9qmvU85O-YUShWETkFRI_SDmhEzilluTdnw8OJ88YFtysCF0eOAc-ngIV1psy4_jVQjU5R001LrfgUXIH2ChSXiJxiPc822wuTAtVd__1Q12ghVwBYdOcjDAYwh3G5By05v973ivPR5dVKPyr9z9dCH9kWlroFHaWQSaK83mGIHs6W3UQeIGdVgs8pPgKzEwzGYf9817og9HEgDkweQDNYC3zfZnbxja1uTw30')"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline -->
+<div>
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Event Timeline</h4>
+<div class="space-y-4 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+<div class="flex gap-4 relative">
+<div class="size-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0 z-10">
+<span class="material-symbols-outlined text-xs">radio_button_checked</span>
+</div>
+<div>
+<p class="text-xs font-bold">Alert Triggered</p>
+<p class="text-[10px] text-slate-500">14:02:11 PM - Memory threshold hit 90%</p>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="size-6 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-white shrink-0 z-10">
+<span class="material-symbols-outlined text-xs">mail</span>
+</div>
+<div>
+<p class="text-xs font-bold">Notification Sent</p>
+<p class="text-[10px] text-slate-500">14:02:15 PM - PagerDuty &amp; Slack notified</p>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="size-6 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center text-white shrink-0 z-10">
+<span class="material-symbols-outlined text-xs">person</span>
+</div>
+<div>
+<p class="text-xs font-bold">Acknowledged</p>
+<p class="text-[10px] text-slate-500">Pending team response...</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Log Snippet -->
+<div>
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Logs snippet</h4>
+<div class="p-4 bg-slate-900 text-slate-300 rounded-xl font-mono text-[11px] leading-relaxed overflow-x-auto whitespace-pre">
+<span class="text-primary">[14:01:55]</span> <span class="text-red-400">ERROR</span> node_mem_usage &gt; 90%
+<span class="text-primary">[14:01:58]</span> GC overhead limit exceeded
+<span class="text-primary">[14:02:05]</span> Dumping heap to /tmp/hprof...
+<span class="text-primary">[14:02:11]</span> FATAL: Out of Memory Exception</div>
+</div>
+<!-- Footer Actions -->
+<div class="pt-4 flex gap-3">
+<button class="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all">Resolve Incident</button>
+<button class="px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm transition-all">Mute</button>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

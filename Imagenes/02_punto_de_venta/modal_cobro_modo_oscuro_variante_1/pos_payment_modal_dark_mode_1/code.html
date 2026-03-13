@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>POS Payment Modal - Light Mode</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0ea641",
+                        "background-light": "#f8fafc",
+                        "surface-light": "#ffffff",
+                        "border-light": "#e2e8f0",
+                        "text-main": "#0f172a",
+                        "text-secondary": "#64748b",
+                        "accent-bg": "#f0fdf4", // Light green for info
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 0 3px rgba(0,0,0,0.05)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .backdrop-blur-md {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-background-light text-text-main font-display min-h-screen flex flex-col overflow-hidden">
+<div class="relative flex h-screen w-full flex-col bg-background-light overflow-hidden transition-all duration-300">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light px-6 py-3 bg-surface-light z-10 shadow-sm">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-text-main">
+<div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg text-primary-dark">
+<span class="material-symbols-outlined">point_of_sale</span>
+</div>
+<h2 class="text-text-main text-xl font-bold leading-tight tracking-tight">SaaS POS</h2>
+</div>
+<label class="hidden md:flex flex-col min-w-40 !h-10 w-96">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-border-light bg-slate-50 focus-within:border-primary-dark/50 focus-within:ring-1 focus-within:ring-primary-dark/20 transition-all">
+<div class="text-text-secondary flex items-center justify-center pl-4 pr-2">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 bg-transparent text-text-main focus:outline-0 border-none h-full placeholder:text-text-secondary px-2 text-sm" placeholder="Buscar productos (Ctrl+K)"/>
+</div>
+</label>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-border-light">
+<div class="size-2 rounded-full bg-primary-dark animate-pulse"></div>
+<span class="text-xs font-medium text-text-secondary">Online</span>
+</div>
+<div class="h-8 w-[1px] bg-border-light"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold text-text-main leading-none">Cajero #01</p>
+<p class="text-xs text-text-secondary mt-1">Sucursal Centro</p>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border border-border-light shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBaWoNuJXTzRlZoasrxzTD6u-vqHrCSA5ujHQWYJeF-EXSVghsI3_YrX2Xh0CfMHekFEP7iY4Eq0x38aUZyuEFTgIGfy2Cct7VC8QcPDqFVSE-953se24vuX_4bniMuKf1DMVglxtp7jFTCAKEFW1wkgdxSlTomoR9eLOXDXfhFUhsNnh5CFfr1zqlKLIDwbdZ4NJSR3C6Wwdb7X-KFNn2oVmev5j5NvZhFzzZrYDoKAEn16aNZUpsxIW4Mn_oKd_39H54g52zOFy0");'></div>
+</div>
+</div>
+</header>
+<main class="flex flex-1 overflow-hidden">
+<section class="flex-1 flex flex-col p-6 overflow-y-auto bg-slate-50/50">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h1 class="text-2xl font-bold text-text-main tracking-tight">Productos</h1>
+<p class="text-text-secondary text-sm mt-1">Seleccione productos para agregar al carrito</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-white text-text-main text-sm font-medium rounded-lg border border-border-light hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filtrar
+                    </button>
+<button class="px-4 py-2 bg-white text-text-main text-sm font-medium rounded-lg border border-border-light hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+<div class="group bg-white border border-border-light rounded-xl p-3 hover:border-primary-dark/30 hover:shadow-md transition-all cursor-pointer flex flex-col h-full shadow-sm">
+<div class="aspect-[4/3] w-full bg-cover bg-center rounded-lg mb-3 relative overflow-hidden" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBCIYUvY-PdWFsfGP2oxo9Nyx2Rx8t-lFF_P4DwiRfmvBSQOxHFGzQjxTSk8TLn7iPlPnCe-Dtbu-ZIIq7-_QjSi66P_OTpOCfYI_vFo1kV2N_lVMrkvgLQFChg7UaJL4HdJWC1LwH0OmUV4qfzAc_-OMC8kenMHCqPYjxuqrBbGFb9ekffFsagxvwxTF_jUzvKKJ7qz5N0DN_SIGeQt--qCLYEXCZ6hjWihXqs1Sq4MJtFLdRZS4m6HyLrRdncio-E1Op6oaaR_Mc");'>
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-xs font-bold text-text-main shadow-sm">Stock: 15</div>
+</div>
+<h3 class="text-text-main font-semibold text-sm mb-1 line-clamp-2">Wireless Mouse Logitech</h3>
+<div class="mt-auto flex items-center justify-between">
+<span class="text-lg font-bold text-text-main">$25.00</span>
+<button class="size-8 rounded-full bg-slate-100 text-text-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<div class="group bg-white border border-border-light rounded-xl p-3 hover:border-primary-dark/30 hover:shadow-md transition-all cursor-pointer flex flex-col h-full shadow-sm">
+<div class="aspect-[4/3] w-full bg-cover bg-center rounded-lg mb-3 relative overflow-hidden" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCPJmzNp0yqFTuON6QhcxGiI1TW_UAI7LUAeYxp9bgg7hv0fkVCeVHdqN8eFLtJS_gkSNxm9nJ6KGpRsdCXAb3zObCzpuhVGo9Na8eC7h21ZYeyp0-4__IJ6cOa1RM-lakBkiOGUw4SkW6mNt0LnFbzo9Zp-GCrubDdKpl3LY7hgVCESJiWMFGlGc7lO2Ajtih_idZ1P8wgDYPCbMNisw8PQW3OS0vtc9Coeco3CyaFNPyzdtbMFbybM1XH6bg7iG-Ijy_ojaQYbs");'>
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-xs font-bold text-text-main shadow-sm">Stock: 8</div>
+</div>
+<h3 class="text-text-main font-semibold text-sm mb-1 line-clamp-2">Mechanical Keyboard RGB</h3>
+<div class="mt-auto flex items-center justify-between">
+<span class="text-lg font-bold text-text-main">$85.00</span>
+<button class="size-8 rounded-full bg-slate-100 text-text-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<div class="group bg-white border border-border-light rounded-xl p-3 hover:border-primary-dark/30 hover:shadow-md transition-all cursor-pointer flex flex-col h-full shadow-sm">
+<div class="aspect-[4/3] w-full bg-cover bg-center rounded-lg mb-3 relative overflow-hidden" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDkuI9fNanGeA7mCri7K3bG1WhZYIBlFTg6ROM-FWsZQ7V2_Q1Z7pJPm8hth5M0SczDMXdj0kyNxJ1RE0IML_dxDMsV0ibr9eMa-24IZtkLAvSQM4G8wQnYF9N7q-_aHxE0LlHXoi9uVzIGeXoYacjCDRvmjOUGBjIqyVEFmcgEhLd1HpWfeEvoAlnUlzxw3n96Mqng5up4Yx7vU7HWtdQB6REdqFiZGQj3fl1YV6UwEDlhUjEOnQXHoKsVEU3MQDhfIikj_tvotyk");'>
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-xs font-bold text-text-main shadow-sm">Stock: 4</div>
+</div>
+<h3 class="text-text-main font-semibold text-sm mb-1 line-clamp-2">Ultra HD Monitor 27"</h3>
+<div class="mt-auto flex items-center justify-between">
+<span class="text-lg font-bold text-text-main">$150.00</span>
+<button class="size-8 rounded-full bg-slate-100 text-text-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<div class="group bg-white border border-border-light rounded-xl p-3 hover:border-primary-dark/30 hover:shadow-md transition-all cursor-pointer flex flex-col h-full shadow-sm">
+<div class="aspect-[4/3] w-full bg-cover bg-center rounded-lg mb-3 relative overflow-hidden" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6gJvED-udLdyf_83yLQJVrbviqG5Yx4EMoaZbnpmFaBhIJyjYVbLf8LJQGznBqGWl0Gpa-ncW8KOyjdLre6zIKoNwt6wO5HrRiKuGayet3wM5a2lKRinQwYk6cx8tB0dupnxP1ahamqUcOXPDRwHZLdBi1ZTLqOylHHDj9jHOT9NGvnlF55r1o-CU76ACVBiI1N2hQMK5VBkjT0iH9dC6vXI4v1eX8rUSVJlMI1zK1mGhMNAGxNbTX5fKbNXjTr1uuPIL8zBqzwM");'>
+<div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-xs font-bold text-text-main shadow-sm">Stock: 20</div>
+</div>
+<h3 class="text-text-main font-semibold text-sm mb-1 line-clamp-2">USB-C Hub Multiport</h3>
+<div class="mt-auto flex items-center justify-between">
+<span class="text-lg font-bold text-text-main">$45.00</span>
+<button class="size-8 rounded-full bg-slate-100 text-text-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<aside class="w-[400px] border-l border-border-light bg-white flex flex-col hidden lg:flex shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+<div class="p-4 border-b border-border-light flex justify-between items-center bg-slate-50/50">
+<h2 class="text-lg font-bold text-text-main">Orden Actual</h2>
+<button class="text-text-secondary hover:text-red-500 text-sm font-medium transition-colors">Limpiar</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-3">
+<div class="flex gap-3 items-start p-2 hover:bg-slate-50 rounded-lg transition-colors">
+<div class="size-12 rounded bg-cover bg-center shrink-0 border border-border-light" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC-Kl6_G8HAj_pZFBQSptZvZjGjGYApmXmZj7m9f7ToSo1MoPGGuSTCZ8TpC9E_bm6S3_D8rzBXkMv4WDyAK302UEQzB2_HrZrjsLFM5Oy2ivZJZct6LaJJCKuk7oqtfAnFQjgAc6R8PeA9YBNYKTwjgR8KbuqoEw4bWpTobnezC8m1b_dZdF9hiHen3x_GIa2ru7wiNCv2sPEhxFOslk-rB-0QsZYi4P5oAbCLCnnStNMsV70bRroAkkSeo4sjfc7yaoTi069ilnM");'></div>
+<div class="flex-1">
+<p class="text-text-main text-sm font-semibold">Wireless Mouse Logitech</p>
+<p class="text-text-secondary text-xs">2 x $25.00</p>
+</div>
+<p class="text-text-main font-bold text-sm">$50.00</p>
+</div>
+<div class="flex gap-3 items-start p-2 hover:bg-slate-50 rounded-lg transition-colors">
+<div class="size-12 rounded bg-cover bg-center shrink-0 border border-border-light" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBFT-4ioE3Puuhas97dXpmoIroc5ReFiRJKdW3XzN6WOzP7ZYdyZ77j4DgvVHtnDuWbLKnGOSAi_QcPb28uS4DMfYX8BTZFMxfnVFKGCKnCyyDoWeXOQVP27YiHNFVb9E51bvAyBoYZnZgWr_XzgtZ81JrsiTtG9Az76Oquo4EKufA4yEzIDpHblHtPt8OG0TzgE5AK0hQtALlBRrvswALauiubIQtPZfdgAKigPg_LxjkKDo3evh0uC0CQdvzAkXIkHUfRrU6scSA");'></div>
+<div class="flex-1">
+<p class="text-text-main text-sm font-semibold">Mechanical Keyboard RGB</p>
+<p class="text-text-secondary text-xs">1 x $85.00</p>
+</div>
+<p class="text-text-main font-bold text-sm">$85.00</p>
+</div>
+<div class="flex gap-3 items-start p-2 hover:bg-slate-50 rounded-lg transition-colors">
+<div class="size-12 rounded bg-cover bg-center shrink-0 border border-border-light" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB51fff6cLBgTpXiaNUz_hQqLVorIm_Av0AMxdYpev96UoFajbweOAGAaCdU1C8fPDFm9I8RIKkQaee51PG1DE46-e8pyUy3OvoTcTvHy6i5nEQWM0aFof3w_6WYjauCuSsETF8QQX5V1cqecDlSB6pA-vkWmOzC0jZ7gUPb3uXE5SbB_Zlpi6_FQ7dkHLZanWDd7EwJut9atnj_gb9Ta5mGSW68ByNBUwEBLqEYNJOVhKA0gAYXDYOKFjsCGUMKXCnPpYAbg5FQMI");'></div>
+<div class="flex-1">
+<p class="text-text-main text-sm font-semibold">Aluminum Laptop Stand</p>
+<p class="text-text-secondary text-xs">1 x $30.00</p>
+</div>
+<p class="text-text-main font-bold text-sm">$30.00</p>
+</div>
+</div>
+<div class="p-6 bg-slate-50 border-t border-border-light">
+<div class="flex justify-between mb-2">
+<span class="text-text-secondary text-sm">Subtotal</span>
+<span class="text-text-main text-sm font-medium">$165.00</span>
+</div>
+<div class="flex justify-between mb-2">
+<span class="text-text-secondary text-sm">IVA (16%)</span>
+<span class="text-text-main text-sm font-medium">$26.40</span>
+</div>
+<div class="h-px bg-border-light my-4"></div>
+<div class="flex justify-between mb-6">
+<span class="text-text-main font-bold text-lg">Total</span>
+<span class="text-primary-dark font-bold text-2xl">$191.40</span>
+</div>
+<button class="w-full h-12 bg-primary-dark hover:bg-green-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-200">
+                    Pagar Ahora
+                </button>
+</div>
+</aside>
+</main>
+</div>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-200/50 backdrop-blur-md p-4 animate-in fade-in duration-300">
+<div class="relative w-full max-w-md bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+<div class="flex items-center justify-between px-6 py-5 border-b border-border-light bg-white">
+<div>
+<h3 class="text-xl font-bold text-text-main flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-dark">phonelink_ring</span>
+                    Pago Móvil
+                </h3>
+</div>
+<button class="text-text-secondary hover:text-text-main transition-colors rounded-lg hover:bg-slate-100 p-1">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6 flex flex-col gap-5">
+<div class="bg-accent-bg border border-green-100 rounded-lg p-3 flex gap-3 items-start">
+<span class="material-symbols-outlined text-green-600 text-[20px] mt-0.5">info</span>
+<div class="text-sm text-green-800">
+<p class="leading-snug">Verifique el monto exacto antes de confirmar la operación de Pago Móvil.</p>
+</div>
+</div>
+<form class="flex flex-col gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-text-secondary uppercase tracking-wider ml-1">Banco Emisor</label>
+<div class="relative">
+<select class="w-full bg-slate-50 border border-gray-200 text-text-main rounded-lg h-12 pl-4 pr-10 appearance-none focus:border-primary-dark focus:ring-1 focus:ring-primary-dark focus:bg-white transition-all cursor-pointer font-medium">
+<option disabled="" selected="" value="">Seleccionar Banco...</option>
+<option value="bancamiga">Bancamiga</option>
+<option value="banesco">Banesco</option>
+<option value="mercantil">Mercantil</option>
+<option value="bbva">BBVA Provincial</option>
+<option value="bdv">Banco de Venezuela</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-bold text-text-secondary uppercase tracking-wider ml-1">Número de Referencia</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 group-focus-within:text-primary-dark transition-colors">
+<span class="material-symbols-outlined text-[20px]">tag</span>
+</div>
+<input autofocus="" class="w-full bg-slate-50 border border-gray-200 text-text-main rounded-lg h-12 pl-11 pr-4 focus:border-primary-dark focus:ring-1 focus:ring-primary-dark focus:bg-white transition-all font-mono placeholder:text-gray-400 font-medium" placeholder="0000-0000" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between items-end">
+<label class="text-xs font-bold text-text-secondary uppercase tracking-wider ml-1">Monto a Pagar</label>
+<span class="text-xs text-primary-dark font-bold bg-green-50 px-2 py-0.5 rounded-full">Total de la orden</span>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400 group-focus-within:text-primary-dark transition-colors">
+<span class="material-symbols-outlined text-[20px]">attach_money</span>
+</div>
+<input class="w-full bg-slate-50 border border-gray-200 text-text-main rounded-lg h-14 pl-11 pr-4 focus:border-primary-dark focus:ring-1 focus:ring-primary-dark focus:bg-white transition-all text-xl font-bold" type="text" value="191.40"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="text-sm font-semibold text-text-secondary">USD</span>
+</div>
+</div>
+</div>
+</form>
+</div>
+<div class="p-6 pt-2 pb-8 flex flex-col gap-3">
+<button class="w-full bg-primary hover:bg-green-400 text-black text-base font-bold h-12 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+                Confirmar Pago
+            </button>
+<button class="w-full bg-transparent hover:bg-slate-50 text-text-secondary hover:text-text-main text-sm font-medium h-10 rounded-lg transition-colors border border-transparent hover:border-gray-200">
+                Cancelar
+            </button>
+</div>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Debt Management Dashboard - Dark Mode</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b9dee",
+                        "dark-bg-main": "#121212",
+                        "dark-bg-sidebar": "#0a0a0a",
+                        "dark-card": "#1E1E1E",
+                        "dark-border": "#333333",
+                        "dark-text-primary": "#FFFFFF",
+                        "dark-text-secondary": "#9CA3AF",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-dark-bg-main text-dark-text-primary font-display antialiased">
+<div class="flex h-screen w-full overflow-hidden bg-dark-bg-main">
+<aside class="flex w-64 flex-col border-r border-dark-border bg-dark-bg-sidebar h-full shrink-0 hidden lg:flex">
+<div class="flex items-center gap-3 px-6 py-6 border-b border-dark-border">
+<div class="h-10 w-10 overflow-hidden rounded-full bg-slate-700">
+<img alt="Admin User Profile Picture" class="h-full w-full object-cover" data-alt="Close up portrait of a smiling man with a beard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZVo3t1MM0LvcEZbYzE6koDz3Myfp-dDgXpI8u8amwtYO2QhoyaNeMFuknqlZXK-1APKYQcGApMOqYl7Gje27p2XU97ukiO4bPjowahpt717sQOQpWrpLHOCPmnoXFHNIZTrQNl1AYei5kymQRMaD_SaFi_boG0Fg9CnzZZb9b8vn55wfHyzPD6nRplSfxRH4GTY3ZNNO83dTEwZhzw-ox8rZHqqNCM_pFlc-SiF7FzsaZyHG_QwEP_DF9O49wgneM2kG-brsDKhY"/>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-sm font-bold">SaaS Billing</h1>
+<p class="text-slate-400 text-xs font-medium">Admin</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1 px-4 py-4 flex-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary">group</span>
+<span class="text-sm font-medium">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/20 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-primary fill-1">receipt_long</span>
+<span class="text-sm font-bold">Deudas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary">description</span>
+<span class="text-sm font-medium">Reportes</span>
+</a>
+<div class="my-2 border-t border-dark-border"></div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary">settings</span>
+<span class="text-sm font-medium">Configuración</span>
+</a>
+</nav>
+<div class="p-4 border-t border-dark-border">
+<button class="flex w-full items-center justify-center gap-2 rounded-lg border border-dark-border bg-dark-bg-sidebar px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
+</div>
+</aside>
+<main class="flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-dark-bg-main">
+<header class="flex lg:hidden items-center justify-between px-4 py-4 bg-dark-card border-b border-dark-border">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 overflow-hidden rounded-full bg-slate-700">
+<img alt="User profile placeholder" class="h-full w-full object-cover" data-alt="Portrait of a user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8LvUuWLgzdfo4P3yR_dyCE9CNG29xHOgLIf_riwRHju-d2-9zEFSgYd_Me8LGtuJsDocUfdrOOUtNt86CSJYPkY9P_CnGFaaDRIMjrs_AI0DAcT_5_-rLTntHb3C6ZD8OUHTq1Dd7QUSIoU-SKpf_GiTyg02qhzdzQRoYFOHu9J4hktqPafKIHkqE5JS3yRUgc-mCco6Z2qsCE3lanq3RWh_4vioXRUephyd5UOEYF4c69QrCnRJOThbnlP3jmkcivvCFzg2TgzQ"/>
+</div>
+<span class="font-bold text-white">SaaS Billing</span>
+</div>
+<button class="text-slate-400">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<div class="container mx-auto max-w-7xl px-4 py-8 lg:px-8">
+<div class="mb-8 flex flex-col gap-1">
+<h2 class="text-3xl font-extrabold text-white tracking-tight">Gestión de Cobranza</h2>
+<p class="text-slate-400 text-base">Vista general de cuentas por cobrar y estado de clientes.</p>
+</div>
+<div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-8">
+<div class="flex flex-col gap-4 rounded-xl border border-dark-border bg-dark-card p-6 shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-primary/10 blur-2xl transition-all group-hover:bg-primary/20"></div>
+<div class="flex items-start justify-between">
+<div class="rounded-lg bg-primary/20 p-2 text-primary">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<span class="flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +5%
+                            </span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-400">Total Deuda Activa</p>
+<h3 class="mt-1 text-2xl font-bold text-white tracking-tight">$145,200.00</h3>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl border border-dark-border bg-dark-card p-6 shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-amber-500/10 blur-2xl transition-all group-hover:bg-amber-500/20"></div>
+<div class="flex items-start justify-between">
+<div class="rounded-lg bg-amber-500/20 p-2 text-amber-500">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<span class="flex items-center gap-1 text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+                                Atención
+                            </span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-400">Clientes Morosos</p>
+<h3 class="mt-1 text-2xl font-bold text-white tracking-tight">12</h3>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl border border-dark-border bg-dark-card p-6 shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-red-500/10 blur-2xl transition-all group-hover:bg-red-500/20"></div>
+<div class="flex items-start justify-between">
+<div class="rounded-lg bg-red-500/20 p-2 text-red-500">
+<span class="material-symbols-outlined">local_fire_department</span>
+</div>
+<span class="flex items-center gap-1 text-xs font-semibold text-red-400 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+                                Crítico
+                            </span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-400">Deudas Críticas (&gt;60 días)</p>
+<h3 class="mt-1 text-2xl font-bold text-white tracking-tight">$32,500.00</h3>
+</div>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-dark-border bg-dark-card shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-4 border-b border-dark-border p-4">
+<div class="relative w-full max-w-md">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="block w-full rounded-lg border border-dark-border bg-dark-bg-main py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Buscar cliente por nombre, teléfono o ID..." type="text"/>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<button class="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-card px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+<span>Filtros</span>
+</button>
+<button class="flex items-center gap-2 rounded-lg border border-dark-border bg-dark-card px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span>Exportar</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm text-slate-400">
+<thead class="bg-black/20 text-xs uppercase text-slate-500 font-semibold border-b border-dark-border">
+<tr>
+<th class="px-6 py-4 font-semibold tracking-wider w-[300px]" scope="col">Cliente</th>
+<th class="px-6 py-4 font-semibold tracking-wider" scope="col">Teléfono</th>
+<th class="px-6 py-4 font-semibold tracking-wider text-right" scope="col">Total Adeudado</th>
+<th class="px-6 py-4 font-semibold tracking-wider" scope="col">Último Pago</th>
+<th class="px-6 py-4 font-semibold tracking-wider" scope="col">Días sin Pagar</th>
+<th class="px-6 py-4 font-semibold tracking-wider text-center" scope="col">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-dark-border bg-dark-card">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Portrait of Ana Martinez" class="h-full w-full object-cover" data-alt="Portrait of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApznjCI70-VVkkMBScEVW172Y1R1_8gFDuVKtXo-wLkzLVeJB-4ZWewmQblav3yB613rIvidiwsh6Xof6LHd2Fh_cfFFIbyQhZ3RUOSqvbW0Drg9yoFhRnZ1Z_oEDnjfwWnCGW3I8uatjhecVoL2vyKFzQa6LHMnoFYt3sg6iWIwBKKwUvzGKkx-leWhkDShQ_duhpptLe9Ar-DrSTVb8iUoklE8LEhJ7yLNn7_JcIB0GwdlVD2gcqlnoH6nCCUNp5oc7QtcuOQpw"/>
+</div>
+<div>
+<div class="font-bold text-white">Ana Martinez</div>
+<div class="text-xs text-slate-500">ana.m@example.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-400">
+                                        +52 55 1234 5678
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-right font-semibold text-white">
+                                        $1,200.00
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-500">
+                                        Oct 12, 2023
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-400 border border-red-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                            45 días
+                                        </span>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="flex items-center gap-1 rounded-md bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all">
+                                                Registrar Abono
+                                            </button>
+<button class="rounded-md p-1.5 text-slate-500 hover:bg-white/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Portrait of Carlos Lopez" class="h-full w-full object-cover" data-alt="Portrait of a man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5UM8hiPjyQLGmMsno83qntRgPCA6xjhVkOl2LOFGO372sfSKgyTYhRbU8PPMgM_lRfck_NYksJNq7W3IdhfNN13obHoIKuuTmy61ZX6iBRf_2ptU8I91N1aTlar0MXOVnob0bC7-Dt1B13ZmlsdUSt78n42E2ijPeGmv_Bh5I6iRcDzUhBRo1YbY-AixwEfmmGQl0ZbLS3V5UrevHL7hESXy_wqb36tTf1vlkjEFTvgajmXIGe2wdP_4w1Wmk83wZ2GDfdd3xzpc"/>
+</div>
+<div>
+<div class="font-bold text-white">Carlos López</div>
+<div class="text-xs text-slate-500">carlos.lpz@example.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-400">
+                                        +52 55 8765 4321
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-right font-semibold text-white">
+                                        $450.00
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-500">
+                                        Nov 01, 2023
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                                            18 días
+                                        </span>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="flex items-center gap-1 rounded-md bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all">
+                                                Registrar Abono
+                                            </button>
+<button class="rounded-md p-1.5 text-slate-500 hover:bg-white/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Portrait of Maria Gonzalez" class="h-full w-full object-cover" data-alt="Portrait of a business woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTw-Fwv0d0R6V-PE7A_Off5kK-CG1MqQLeeJC3BMEeEYR1jb1QeRZOo8VVjDxWPbCrOPYulTU415Wn2dSah_fNLEYL1tSF9HWxIRQz5j3QMQsjZDm6P4BIMlBEhoiudnsfmd30uCxT9eYFpR4CUwjLLlhgJYxamcUT8-7GVlcCxDZs34o4MyI4O7p6zqoOTQVnA-lYMe8F18ZrSWqN7lAdb21J1wvu7uUvIOzcJBhCjSsh0eaLP3EzT3hV9c2bNPsuZ1THxyMFLXo"/>
+</div>
+<div>
+<div class="font-bold text-white">Maria Gonzalez</div>
+<div class="text-xs text-slate-500">mgonzalez@example.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-400">
+                                        +52 33 9876 5432
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-right font-semibold text-white">
+                                        $2,800.00
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-500">
+                                        Sep 15, 2023
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-400 border border-red-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                            62 días
+                                        </span>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="flex items-center gap-1 rounded-md bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all">
+                                                Registrar Abono
+                                            </button>
+<button class="rounded-md p-1.5 text-slate-500 hover:bg-white/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Portrait of Juan Perez" class="h-full w-full object-cover" data-alt="Portrait of a young man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdAfGuSlfLIa8wWP7Sp3LmNCxFsltoKVFd5Lk_xJTzh2oW6QwYo3n93AA_bLI58Uftvpl8_5PkZHgdjSUuCEe-XOAGaW3uHOFLs4ZM-juOgWMqyT2NODcCxDhlBW7MPvIwEX1yY0tEbPPzJ28AhfROVgsQ-jOk5j6dyGoBeFKd1Lyhn6yFVKdw-ZjOEqdL7r61TbQs4l9R59KYuxJmqGZmF2hqEbGpTF4RrrlySheUGd7qAG1M_ClpDA8GmVksDeN54kcp-1ablLs"/>
+</div>
+<div>
+<div class="font-bold text-white">Juan Pérez</div>
+<div class="text-xs text-slate-500">juan.p@example.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-400">
+                                        +52 81 1122 3344
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-right font-semibold text-white">
+                                        $150.00
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-500">
+                                        Nov 10, 2023
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                            5 días
+                                        </span>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="flex items-center gap-1 rounded-md bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all">
+                                                Registrar Abono
+                                            </button>
+<button class="rounded-md p-1.5 text-slate-500 hover:bg-white/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Portrait of Sofia Ramirez" class="h-full w-full object-cover" data-alt="Portrait of a serious woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi7bMkO8dwmppJlLWOdWkFfq5t2yvjz42xwmR8yCJ8aYV_mjlaYNDlZSc8jsAp3TTfYBAC4eKBxZHhZjv3rDVsA6cAvbzIoYPfwYag3NnE9esaEMZKtCXEuDh10BODIV4B19WPbfhLj2fvyZ2bxnQ2GhyM0rwScjeaqHu1fslK60-_DfBvc_eq9953slLHhfFhtoatQUGyEwR85oK4syhUamDLL4_Mv9wBFyRi5r7MnXLj_TWwwQCwWZXTTYDlk_bZGII-OfuGMK0"/>
+</div>
+<div>
+<div class="font-bold text-white">Sofia Ramirez</div>
+<div class="text-xs text-slate-500">sofia.ram@example.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-400">
+                                        +52 55 4455 6677
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-right font-semibold text-white">
+                                        $900.00
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4 text-slate-500">
+                                        Oct 25, 2023
+                                    </td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                                            25 días
+                                        </span>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="flex items-center gap-1 rounded-md bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-all">
+                                                Registrar Abono
+                                            </button>
+<button class="rounded-md p-1.5 text-slate-500 hover:bg-white/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between border-t border-dark-border bg-black/20 px-4 py-3 sm:px-6">
+<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+<div>
+<p class="text-sm text-slate-400">
+                                    Mostrando <span class="font-medium text-white">1</span> a <span class="font-medium text-white">5</span> de <span class="font-medium text-white">42</span> resultados
+                                </p>
+</div>
+<div>
+<nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">
+<span class="sr-only">Previous</span>
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</a>
+<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">1</a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-300 ring-1 ring-inset ring-slate-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">2</a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-300 ring-1 ring-inset ring-slate-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">3</a>
+<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-700 hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">
+<span class="sr-only">Next</span>
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

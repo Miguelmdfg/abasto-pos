@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinOps SaaS - Profitability &amp; Cost Management</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3d2b23;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-primary/20 bg-white dark:bg-background-dark flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary rounded-lg p-2 text-white">
+<span class="material-symbols-outlined block">account_balance_wallet</span>
+</div>
+<div>
+<h1 class="font-bold text-lg leading-tight">FinOps SaaS</h1>
+<p class="text-xs text-slate-500 dark:text-primary/60 font-medium uppercase tracking-wider">Profit Management</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-medium">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-bold">Costs &amp; Profit</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-slate-200 dark:border-primary/10">
+<button class="w-full bg-primary text-white py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                    New Batch
+                </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark/50">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-primary/10 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full bg-slate-100 dark:bg-primary/5 border-none rounded-lg py-2 pl-10 text-sm focus:ring-2 focus:ring-primary/50 dark:text-slate-200" placeholder="Search batch, units, or pricing..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-primary/20 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-lg">download</span>
+                        Export CSV
+                    </button>
+<div class="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs border border-primary/30">
+                        JD
+                    </div>
+</div>
+</header>
+<!-- Dashboard Content Scrollable Area -->
+<div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+<!-- Title and Summary Metrics -->
+<div class="mb-8">
+<h2 class="text-2xl font-black mb-1">Profitability &amp; Cost Management</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Real-time financial modeling and pricing optimization for SKU batches.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Portfolio Margin</p>
+<span class="material-symbols-outlined text-primary">pie_chart</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-black">28.4%</span>
+<span class="text-emerald-500 text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm">arrow_upward</span> 2.1%
+                            </span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Projected Monthly Profit</p>
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-black">+$12,450</span>
+<span class="text-emerald-500 text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm">arrow_upward</span> 5.4%
+                            </span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Underperforming Batches</p>
+<span class="material-symbols-outlined text-primary">warning</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-black">3</span>
+<span class="text-slate-400 text-xs font-medium ml-2 uppercase tracking-tighter">Requires Action</span>
+</div>
+</div>
+</div>
+<!-- Table Section -->
+<div class="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-primary/20 shadow-sm overflow-hidden mb-8">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-primary/5 border-b border-slate-200 dark:border-primary/10">
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Batch Reference</th>
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Batch Price ($)</th>
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Units</th>
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Unit Cost ($)</th>
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Selling Price ($)</th>
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Profit</th>
+<th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Margin %</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-primary/5">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-sm">B-2024-001 <span class="text-xs text-slate-400 ml-2">Electronics</span></td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="1,200.00"/>
+</td>
+<td class="px-6 py-4">
+<input class="w-16 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="100"/>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">12.00</td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-primary group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="18.00"/>
+</td>
+<td class="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-500 text-sm">+$600.00</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                            33.3% Healthy
+                                        </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-sm">B-2024-002 <span class="text-xs text-slate-400 ml-2">Accessories</span></td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="850.00"/>
+</td>
+<td class="px-6 py-4">
+<input class="w-16 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="50"/>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">17.00</td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-primary group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="15.50"/>
+</td>
+<td class="px-6 py-4 text-right font-bold text-rose-600 dark:text-rose-400 text-sm">-$75.00</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
+                                            -9.6% Critical
+                                        </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-sm">B-2024-003 <span class="text-xs text-slate-400 ml-2">Home Decor</span></td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="3,000.00"/>
+</td>
+<td class="px-6 py-4">
+<input class="w-16 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="200"/>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">15.00</td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-primary group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="22.00"/>
+</td>
+<td class="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-500 text-sm">+$1,400.00</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                            31.8% Healthy
+                                        </span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-sm">B-2024-004 <span class="text-xs text-slate-400 ml-2">Furniture</span></td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="500.00"/>
+</td>
+<td class="px-6 py-4">
+<input class="w-16 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="10"/>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">50.00</td>
+<td class="px-6 py-4">
+<input class="w-24 bg-transparent border-none p-0 focus:ring-0 text-sm font-bold text-primary group-hover:bg-white dark:group-hover:bg-primary/10 rounded px-2 transition-all" type="text" value="55.00"/>
+</td>
+<td class="px-6 py-4 text-right font-bold text-slate-600 dark:text-slate-400 text-sm">+$50.00</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                                            9.1% Low
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Price Optimization Suggesions Grid (Inline) -->
+<div class="mt-8">
+<h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+                        Smart Price Suggestions
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Suggestion Card 1 -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-5 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3">
+<span class="text-[10px] font-black uppercase tracking-widest bg-primary text-white px-2 py-0.5 rounded">High Impact</span>
+</div>
+<p class="text-xs font-bold text-primary uppercase mb-2">Optimize B-2024-002</p>
+<p class="text-sm font-medium mb-4">Current margin is <span class="text-rose-500 font-bold">-9.6%</span>. Increase selling price to achieve targets.</p>
+<div class="bg-white dark:bg-background-dark/50 rounded-lg p-3 flex justify-between items-center mb-4">
+<div>
+<p class="text-[10px] text-slate-400 uppercase font-black">Suggested Price</p>
+<p class="text-xl font-black text-primary">$21.25</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-slate-400 uppercase font-black">New Margin</p>
+<p class="text-lg font-black text-emerald-500">20%</p>
+</div>
+</div>
+<button class="w-full bg-primary text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
+                                Apply Suggestion
+                            </button>
+</div>
+<!-- Suggestion Card 2 -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-5">
+<p class="text-xs font-bold text-primary uppercase mb-2">Dynamic Pricing B-2024-004</p>
+<p class="text-sm font-medium mb-4">Competitor prices increased by 12%. Potential to capture more margin.</p>
+<div class="bg-white dark:bg-background-dark/50 rounded-lg p-3 flex justify-between items-center mb-4">
+<div>
+<p class="text-[10px] text-slate-400 uppercase font-black">Suggested Price</p>
+<p class="text-xl font-black text-primary">$62.50</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-slate-400 uppercase font-black">New Margin</p>
+<p class="text-lg font-black text-emerald-500">25%</p>
+</div>
+</div>
+<button class="w-full bg-primary text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
+                                Apply Suggestion
+                            </button>
+</div>
+<!-- Suggestion Card 3 -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-5 border-dashed flex flex-col items-center justify-center text-center opacity-70">
+<span class="material-symbols-outlined text-3xl mb-2 text-primary/40">insights</span>
+<p class="text-xs font-bold uppercase text-slate-400">More Insights Pending</p>
+<p class="text-xs text-slate-400 mt-1 max-w-[180px]">AI is analyzing shipping costs to provide more suggestions.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action Bar -->
+<footer class="h-16 border-t border-slate-200 dark:border-primary/10 bg-white dark:bg-background-dark flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+<span class="text-xs font-medium text-slate-500 uppercase tracking-tighter">System Balanced</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-medium text-slate-500 uppercase tracking-tighter">Calculating Live Margins</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/10 transition-colors">
+                        Discard
+                    </button>
+<button class="px-8 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+                        Save Changes
+                    </button>
+</div>
+</footer>
+</main>
+<!-- Right Side Panel (Automatic Recommendations) -->
+<aside class="w-80 flex-shrink-0 border-l border-slate-200 dark:border-primary/20 bg-white dark:bg-background-dark p-6 hidden xl:flex flex-col">
+<h3 class="font-black text-lg mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">lightbulb</span>
+                What-if Analysis
+            </h3>
+<div class="space-y-6">
+<div class="space-y-3">
+<p class="text-xs font-black text-slate-400 uppercase tracking-widest">Global Adjustments</p>
+<div class="p-4 bg-slate-50 dark:bg-primary/5 rounded-xl border border-slate-100 dark:border-primary/10">
+<label class="text-sm font-medium block mb-2">Simulate Cost Increase</label>
+<div class="flex items-center gap-3">
+<input class="flex-1 h-1.5 bg-slate-200 dark:bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<span class="text-sm font-black text-primary">+15%</span>
+</div>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-primary/5 rounded-xl border border-slate-100 dark:border-primary/10">
+<label class="text-sm font-medium block mb-2">Target Margin Goal</label>
+<div class="flex items-center gap-3">
+<input class="flex-1 h-1.5 bg-slate-200 dark:bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<span class="text-sm font-black text-primary">30%</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<p class="text-xs font-black text-slate-400 uppercase tracking-widest">Pricing Alerts</p>
+<div class="flex gap-3">
+<div class="h-8 w-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-rose-600 dark:text-rose-400 text-sm">trending_down</span>
+</div>
+<div>
+<p class="text-sm font-bold">Margin Erosion Detected</p>
+<p class="text-xs text-slate-500">Shipping costs for Electronics have risen by 8% this month.</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-sm">rocket_launch</span>
+</div>
+<div>
+<p class="text-sm font-bold">Optimization Success</p>
+<p class="text-xs text-slate-500">Last week's price adjustments increased profit by $2.3k.</p>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="bg-gradient-to-br from-primary to-orange-600 p-5 rounded-2xl text-white relative overflow-hidden group">
+<div class="relative z-10">
+<p class="font-black text-lg mb-1">Upgrade to AI Pro</p>
+<p class="text-xs text-white/80 mb-4 leading-relaxed">Unlock real-time competitor tracking and automatic price syncing.</p>
+<button class="w-full bg-white text-primary font-bold py-2 rounded-lg text-xs hover:bg-slate-50 transition-colors">
+                                Learn More
+                            </button>
+</div>
+<!-- Abstract Pattern -->
+<div class="absolute -bottom-4 -right-4 h-24 w-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

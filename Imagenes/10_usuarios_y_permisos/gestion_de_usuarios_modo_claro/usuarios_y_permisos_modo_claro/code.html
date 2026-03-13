@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Panel - User &amp; Permissions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .sidebar-fixed { width: 260px; }
+        .content-offset { margin-left: 260px; }
+        .activity-panel { width: 320px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<!-- Fixed Sidebar -->
+<aside class="fixed left-0 top-0 h-screen sidebar-fixed bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-40">
+<div class="p-6">
+<div class="flex items-center gap-3 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">shield_person</span>
+<span class="text-xl font-extrabold tracking-tight">AdminCore</span>
+</div>
+<p class="text-xs text-slate-500 mt-1 uppercase tracking-widest font-semibold">Management Console</p>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium">Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-medium">Roles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">key</span>
+<span class="font-medium">Permissions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<button class="flex items-center gap-3 w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined text-primary">help</span>
+<span class="font-medium text-sm">Support Center</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="content-offset min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 py-4 flex justify-between items-center">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white">Users Management</h1>
+<p class="text-sm text-slate-500">Configure team access and security roles</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm w-64 transition-all" placeholder="Search members..." type="text"/>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-sm shadow-primary/20">
+<span class="material-symbols-outlined text-sm">person_add</span>
+                    Create User
+                </button>
+</div>
+</header>
+<div class="flex-1 flex gap-0">
+<!-- Table Section -->
+<section class="flex-1 p-8">
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Name</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<!-- User Row 1 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="Portrait of a young professional man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrDMLLcFZw80TlZZk1VcTEQ5GgT-ZVKG0-SY6P1qWgv32Oehs1TKYMykbTXQ62ENienA-_c309qPMzM-UJdw-IDGpbBk50B2DQ4iVJycn6Gv4qxb9C2B7AJfmzUEPXupBEAEsxqtl0EQ5_F6v8y6HbHnwihrMmUCYzKWEMpTcX8p_4R2NxXxL2SQVCr79zXflrgcdD8KYIJdRbmcSwGUUviMtgvC5Yt9JZe_zxTLdutgA1-s_plZ2DaBvDWNyIqkVe-NdK-2L4uJw"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white leading-none">John Doe</p>
+<p class="text-xs text-slate-500 mt-1">john@company.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">Admin</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-emerald-600">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="text-slate-400 hover:text-red-500 transition-colors ml-3"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<!-- User Row 2 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold overflow-hidden border border-purple-200">
+<img class="w-full h-full object-cover" data-alt="Portrait of a female administrator with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC920jq4Ao21d6Ov7vzBAr0X8LF3bkX8gjZXYZTGZzBNpDxeWsnHrJeyp_4SpkSWa_ZHrMgx1nKCzgCrKrof5xgW3W50Nah63dLO9DlLWbwQ8iJ7Gp3XZHuqHNP88rz6Y5NMlwaIu0rLp1u5H5hqnXuR9dQtsJBnvQ4a0c1Uy9JIp_GJ-5O-DJbKGWPGTu6vJdQhplYNkZV3SDjuyGstpkvD0ibPCJpjvBTLjaFN11GxF_vBRU5f9rrx1XsR9qDdzF4Hr-iRWeD_8w"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white leading-none">Sarah Smith</p>
+<p class="text-xs text-slate-500 mt-1">sarah.s@company.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-xs font-bold">Editor</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-emerald-600">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="text-slate-400 hover:text-red-500 transition-colors ml-3"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<!-- User Row 3 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold overflow-hidden border border-slate-200">
+<img class="w-full h-full object-cover" data-alt="Portrait of a team member with a casual appearance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAfMKre2rrEx1-fKDppJdwIo3EC_Rqtk8ArvhCe8wadr7B3f6ztE7HNdRDoMwviQZ-dhktqYJlRzmveoh4DOLhvLeiLoeetxWBvuBIfuQf8n-3PtJ0j_s1E7-yAkdb-KLPqTmJH_eo9L4_RHYtAYUUrZQlsTgIbRUF57K_vnCYRisqyVGuu7y0YIDp4Hd_Gx7rRI8wa-MOPj82Vah4l6YG_CbMa_qkRJ9mmhxczaCALD5sWhIvyw75CmxknWok_9eVoczxBdtaQyY"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white leading-none">Alex Chen</p>
+<p class="text-xs text-slate-500 mt-1">alex.chen@company.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-xs font-bold">Viewer</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-slate-400"></span>
+<span class="text-sm font-medium text-slate-500">Inactive</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="text-slate-400 hover:text-red-500 transition-colors ml-3"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<!-- User Row 4 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold overflow-hidden border border-orange-200">
+<img class="w-full h-full object-cover" data-alt="Portrait of a professional woman with a bright background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf9hTPBHmNHclCy1bJ6ZgU80lyM7W3SrXZoc6F2E06TNq56Md5GNdNoIgAd9MSBZLSK-By1EA0NapGdUp-pZxOpbgX-qxxKt3DJ_OUWopc68dwh54hGOHp8evBX22kVg862Z8pWmio6de14OtHxbIUQbxiQf3tBa2kZTwJu95GSu33hfSSFwavJbvV2Kt3CsYHfZFqmrInt-UFfIOA_ewWbBUy4RZFFATNtVTlPjc0hUWoeXV1Eje005FoHIA78OoTjL6Vr-fEtdQ"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white leading-none">Maria Garcia</p>
+<p class="text-xs text-slate-500 mt-1">maria.g@company.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-xs font-bold">Editor</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-emerald-600">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="text-slate-400 hover:text-red-500 transition-colors ml-3"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-sm text-slate-500">
+<span>Showing 4 of 24 users</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50">Prev</button>
+<button class="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50">Next</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Activity Side Panel -->
+<aside class="activity-panel border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col">
+<div class="flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-slate-400">history</span>
+<h2 class="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h2>
+</div>
+<div class="flex-1 space-y-6 relative">
+<!-- Timeline Line -->
+<div class="absolute left-4 top-0 bottom-0 w-px bg-slate-100 dark:bg-slate-800"></div>
+<div class="relative flex gap-4">
+<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-xs text-primary font-bold">person_add</span>
+</div>
+<div>
+<p class="text-sm text-slate-800 dark:text-slate-200 leading-snug"><span class="font-bold">Admin</span> invited <span class="font-bold">Alex Chen</span></p>
+<span class="text-xs text-slate-400">2 mins ago</span>
+</div>
+</div>
+<div class="relative flex gap-4">
+<div class="size-8 rounded-full bg-amber-100 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-xs text-amber-600 font-bold">shield</span>
+</div>
+<div>
+<p class="text-sm text-slate-800 dark:text-slate-200 leading-snug"><span class="font-bold">John Doe</span> updated permissions for Sarah Smith</p>
+<span class="text-xs text-slate-400">1 hour ago</span>
+</div>
+</div>
+<div class="relative flex gap-4">
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-xs text-slate-500 font-bold">login</span>
+</div>
+<div>
+<p class="text-sm text-slate-800 dark:text-slate-200 leading-snug">System login by <span class="font-bold">Maria Garcia</span></p>
+<span class="text-xs text-slate-400">3 hours ago</span>
+</div>
+</div>
+<div class="relative flex gap-4">
+<div class="size-8 rounded-full bg-emerald-100 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-xs text-emerald-600 font-bold">check_circle</span>
+</div>
+<div>
+<p class="text-sm text-slate-800 dark:text-slate-200 leading-snug">Role <span class="font-bold">Super Editor</span> was created</p>
+<span class="text-xs text-slate-400">Yesterday</span>
+</div>
+</div>
+</div>
+<button class="mt-8 text-sm text-primary font-bold hover:underline w-full text-center">View full audit log</button>
+</aside>
+</div>
+</main>
+<!-- Assign Role Modal (Open State) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+<div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform animate-in fade-in zoom-in duration-200">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Assign Role</h3>
+<p class="text-xs text-slate-500">Update access levels for Sarah Smith</p>
+</div>
+<button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Content -->
+<div class="p-6 space-y-4">
+<div class="space-y-3">
+<label class="flex items-center gap-4 p-4 rounded-lg border border-primary bg-primary/5 cursor-pointer group">
+<input checked="" class="rounded border-primary text-primary focus:ring-primary size-5" type="checkbox"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-0.5">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Administrator</span>
+<span class="text-[10px] uppercase tracking-tighter bg-primary text-white px-1.5 py-0.5 rounded font-black">Full</span>
+</div>
+<p class="text-xs text-slate-500">Full access to all system settings and user management.</p>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-colors group">
+<input class="rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary size-5" type="checkbox"/>
+<div class="flex-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white block mb-0.5">Content Editor</span>
+<p class="text-xs text-slate-500">Can create, edit and delete content but cannot manage users.</p>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-colors group">
+<input class="rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary size-5" type="checkbox"/>
+<div class="flex-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white block mb-0.5">Read Only</span>
+<p class="text-xs text-slate-500">View access across the platform. No editing permissions.</p>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-primary/50 cursor-pointer transition-colors group">
+<input class="rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary size-5" type="checkbox"/>
+<div class="flex-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white block mb-0.5">Support Desk</span>
+<p class="text-xs text-slate-500">Can view tickets and basic user profiles for troubleshooting.</p>
+</div>
+</label>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+<button class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900">Cancel</button>
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-bold text-sm transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+</body></html>

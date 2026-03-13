@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventory Catalog - Grid View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<div class="hidden md:flex flex-col w-64 bg-white dark:bg-[#1a202c] border-r border-slate-200 dark:border-slate-800 h-full">
+<div class="p-6 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<div>
+<h1 class="font-bold text-lg leading-tight">Acme Inc.</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Seller Portal</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary group transition-colors" href="#">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+<span class="font-medium text-sm">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">point_of_sale</span>
+<span class="font-medium text-sm">POS</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">group</span>
+<span class="font-medium text-sm">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">bar_chart</span>
+<span class="font-medium text-sm">Reports</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 group transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+<div class="flex items-center gap-3 px-3 py-3 mt-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCpRlQjZWBSrpZ4LSfAgjMULnY-tmmufhwlf1q-BHEUeDPdApJA-_Wtuk_6x43zFVBgulTMlRHvU0OTjGznSUaLvpRmuDuietbGI14Tq1O4XGvpvlnXU8kk88MxszEP_t86VYxMlWM70mEkEQLVWwiRt0SBFlcC0U2GNA3wiNbTGO_BBHAskktV7bWKHjXpJnp-SeY1hgFZFzLrRGazmSpikqdORgfuDuRlu3gosxJKxrnVH_AGvqhMxDXbPrW1wYNamjWSL3QGhgY');"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">Sarah Connor</p>
+<p class="text-xs text-slate-500 truncate">Store Manager</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col h-full relative overflow-hidden">
+<!-- Top Header -->
+<header class="h-16 bg-white dark:bg-[#1a202c] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 shrink-0 z-10">
+<!-- Search -->
+<div class="flex-1 max-w-xl">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-slate-900 transition-all" placeholder="Search by product name, SKU, or tag..." type="text"/>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-3 ml-4">
+<button class="size-9 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">light_mode</span>
+</button>
+<button class="size-9 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
+</button>
+<button class="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200 dark:shadow-none ml-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Add Product</span>
+</button>
+</div>
+</header>
+<!-- Toolbar / Filters -->
+<div class="flex items-center justify-between px-6 py-4 shrink-0 bg-background-light dark:bg-background-dark z-10">
+<div class="flex items-center gap-4">
+<div class="relative">
+<button class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#1a202c] border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-slate-400">filter_list</span>
+<span>All Categories</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400">arrow_drop_down</span>
+</button>
+</div>
+<div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+<div class="flex items-center gap-2 text-sm text-slate-500">
+<span>Sort by:</span>
+<select class="bg-transparent border-none text-slate-900 dark:text-slate-100 font-semibold text-sm focus:ring-0 cursor-pointer p-0 pr-6">
+<option>Newest Added</option>
+<option>Price: Low to High</option>
+<option>Price: High to Low</option>
+<option>Stock: Low to High</option>
+</select>
+</div>
+</div>
+<div class="flex items-center bg-white dark:bg-[#1a202c] p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+<button class="p-1.5 rounded text-primary bg-primary/10 shadow-sm transition-all" title="Grid View">
+<span class="material-symbols-outlined text-[20px] block">grid_view</span>
+</button>
+<button class="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" title="Table View">
+<span class="material-symbols-outlined text-[20px] block">table_rows</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content Grid -->
+<main class="flex-1 overflow-y-auto px-6 pb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+<!-- Product Card 1 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Audio</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="High-end wireless headphones on a yellow background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS8NJA2P4wMYVrefkhIS1u-y72E4x_Sb-r7U7CUdD6YXj9rvvQEJ5f7S5e1hPsCpf-lJSfISRBWWNJ1t1uTc-kT1z2XuV2pEcQPSgpxP5QCT1-YPwSYaJtMck6SZijKKW22f2bzFjAxvDAv0GmfPT6K5-b3XCb2Pj9FiMvQ0o7RlNc6H1pPqSEg0ghTX6iR9vhUZqyLrHcf4CSbU0_Ebo4QvCrGsH6_vZEn5Jbo2dWmO7Wvj44XiFd5l-FXYrnqTO4Kn1gLfCUCvk"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Sony WH-1000XM4</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-99281</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">12 in stock</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$320.00</p>
+<p class="text-xs text-slate-400">€295.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Wearable</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="White smartwatch product shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJXh9wy2NqOShpYMvpcdRp6gdQN88WpAu9jpIeAc9sI6Qtf8BFZWK_jitWCUsXB0tnzJGA8_1-EFy55CYYpv0pl-nFellFQ9Hb0NnY3uUQFrCg4X5LpbMKzQOdePeDOhZLpB84qBMJSNcvy1y5PpyqLin17OkihC1LTA0izO5wz0V9Hr6kKkPgLpLZxPJf9_IFBEpqrh2p6MDtOgOrLIOze_1DYX5LlMdU_zBsuElnWDL5i5SUGAwG6cYo31zv16YS3bALYrxdAEg"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Apple Watch Series 7</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-88210</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-amber-500"></div>
+<span class="text-xs font-medium text-amber-600 dark:text-amber-400">Low stock (3)</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$399.00</p>
+<p class="text-xs text-slate-400">€368.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Photo</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Vintage polaroid camera on a pink background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyn0T3Ze5fDmYbAlXwNTYSUIP9pz8WJdDC14usKH27BrOnr-NQsAXGGR66zkfJNz3Ga86jFzG8cepDsHXu9oI-DY1UOJOY6E58YhAZk7T_x-m6CXOFTP1f-WgwihGGcqjb4SHV_3Lobl33eAwuynuNjsLyxNNlyOx-vFcVeKU7HmaZISb9IGGOT3Gi7QbLExwInRs_7c7KXZHjkXUqwb6ipzIbny5CyvcyIdnpYWhxfZqLEZ1lIvvlvHWMGDI83O-kfVWyXoH_9dQ"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Fujifilm Instax Mini</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-77293</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">45 in stock</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$76.00</p>
+<p class="text-xs text-slate-400">€70.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Footwear</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Red Nike running shoe floating" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsskUhE7UC4YeaZPxVTvQwlWC4GkezDz18AXc2Fb72r2vU2Harr7sTFpp3QFy34QWoP486-TOteBr6bZFMh55PlYckxORJXlVmhhQrEtFXuXSMkDSEusUijXUgcCjIzOljw7B5R3UsPFJdMC4NAlbmnPfYB_5AUuUENZu-2Gg7BUJ2Fov8IkpyRlkWmiZk9oV8YY_zzdhBfiwaeUzXsAHtRYliiIuf2T2JaNQUPKStAdWAKNfi6697nIIRpiLKV5aJOxHePVwM2dw"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Nike Air Max 270</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-66382</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-red-500"></div>
+<span class="text-xs font-medium text-red-600 dark:text-red-400">Out of Stock</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$150.00</p>
+<p class="text-xs text-slate-400">€138.00</p>
+</div>
+<button class="size-8 rounded-lg border border-slate-300 text-slate-400 cursor-not-allowed flex items-center justify-center transition-colors shadow-sm bg-slate-50" disabled="" title="Out of Stock">
+<span class="material-symbols-outlined text-[18px]">block</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 5 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Accessories</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Abstract colorful shopping bag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9y2AoSTKGYplFpeTVszkOMiGlG5kcNEdkNoM_MOnaJiF8RqpWcJe5AsZ8pbTsJ3GjNU5XcKR-dv8mbcSl2QmFupFueIaMbKugZ_sh18PWoa3WzaTS2x1WDn4ampGKAhFGntlvtEKfy1qIxztlDPfq1wKJBUnfhix4uU9gt0CzQNIkdY4VKHS0UuzvItfPq0QKHFR6ZRr2yIf0_kt3Gtzoh2nWoYfFv941DXdbHyhOCIVSlM45jlPqPzNATu0PdxxMXMPeBDLhZ2I"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Canvas Tote Bag</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-55491</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">150 in stock</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$25.00</p>
+<p class="text-xs text-slate-400">€23.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 6 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Home</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Modern minimalist table lamp" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWE0qPUIXGOThe0rOvOInSZXfh9qTOVevrwwHS_IUpQx1aMz9_tNihdnd-egeqPcyTdOBRVgIEf8Zdnc5eidFdqPlmHpsWmcvHqYroc5g1YCKsUS1dRfrSI7R6UDTGpFdAMV0w_VgcYEyqmm-CMuQ93swGlLEQv1aKPvoOeL6SRZCG5u3_j4kh--1kfeqB5chHz_WQUqiGKboqj_JpKjJTBL_WCQFZt84wHKJhDGUE4YQjwlwJ0bmnIAIK0_bnhIF-P0w1AclbERI"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Nordic Table Lamp</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-44120</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">18 in stock</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$85.00</p>
+<p class="text-xs text-slate-400">€78.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 7 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Office</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Ergonomic office chair in grey" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChHwB2opb4H9pTHwNFnyk7p_vpWdt0QCw7TWg_-EK6rLQ2NfytOXH4HXJb7e9mOI8VChLoyagyTaijjshAbHSmJHLRZ0qkGVVwjtpq-BEtVgMlACaTmsqJJK9HIOH52Aa-NoBUQBpFQI-zIlOwIUcBtHI1No7j2xuh5BtG2ngBmVSd2w0WmLWGqJOq6nwNpaXl3EIBVmR-_FAuSkBo_BGvt-vxpEbDT_M_x5UhVAu_4W5nauvfJsBCMaK2c4BfT8qanrIaxj4w5us"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">Ergo Chair Pro</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-33019</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-amber-500"></div>
+<span class="text-xs font-medium text-amber-600 dark:text-amber-400">Low stock (2)</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$299.00</p>
+<p class="text-xs text-slate-400">€275.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 8 -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col h-full">
+<div class="relative aspect-square w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+<div class="absolute top-3 left-3 bg-white/90 dark:bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider border border-slate-100 dark:border-slate-700">Audio</div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portable bluetooth speaker" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgGyVp_HJyk2RsnuUZlkmJhEpFUUDgtI8KNf5t97ebvFBPqq-7Iv6rPBfX-ehoENrm7wzGDln3gyU_dvHWoHebuhuv_V13vZIwWHJF89KTKUD6lG4QDDVFH-W-qsx_gl4ra7tx5e9t9clby7GB93MsvhT_NhO1SFUHpwThV-7Bic4j74oSNBgxpHjSKXp7R6D9hnu6uOAtJQe4qefsj2kdv7cnFAKXC5OX4Aq9eqjrPYOqJOJ_U6MGsOYf4zz1EAHAb_HTXxFI3QM"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight mb-1">JBL Flip 5</h3>
+<p class="text-xs text-slate-400 font-mono">SKU-22918</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">24 in stock</span>
+</div>
+<div class="mt-auto flex items-end justify-between">
+<div>
+<p class="text-lg font-bold text-slate-900 dark:text-slate-100">$99.00</p>
+<p class="text-xs text-slate-400">€91.00</p>
+</div>
+<button class="size-8 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Add to POS">
+<span class="material-symbols-outlined text-[18px]">point_scan</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detailed Cash Closing - Dark Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d59f2",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#101623",
+                        "surface-dark": "#182234",
+                        "border-dark": "#314368",
+                        "text-secondary": "#90a4cb",
+                        "success": "#10B981",
+                        "danger": "#EF4444",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden">
+<!-- Main Application Container -->
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Background Content (Blurred) -->
+<div aria-hidden="true" class="flex h-full w-full transition-all duration-300 filter blur-sm brightness-50 pointer-events-none select-none">
+<!-- Sidebar -->
+<div class="w-64 flex-none border-r border-border-dark bg-background-dark flex flex-col justify-between p-4 hidden lg:flex">
+<div class="flex flex-col gap-4">
+<div class="flex gap-3 items-center mb-6">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Admin User Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDg-ZYcYfzues_UrqvIKdy_4N8bUrM_7yA3UOakk2p-G3s6C2BfjN3DBo2m_x30EzB97qJ7EunprHFG0SvnSRG7OyT0i9bfVPR7uJPUQtXIdQljVzuhGRtkfjspEwEwIDh7Uk1jThfKe0fmEG4tG51KlzfTpFazb6Tk-IaFmU4e2aZlFEBkkYVV66NjAYMNguAjz6Lpk5VY1C8tVH7nD_bEDUQoKKDXdKaCUUhllNjHs5EV6U-xg27KkafrDXz5-o5d1y-OL4LGD7Y");'></div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-medium leading-normal">Admin Panel</h1>
+<p class="text-text-secondary text-sm font-normal leading-normal">Finanzas</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<div class="flex items-center gap-3 px-3 py-2 text-text-secondary">
+<span class="material-symbols-outlined">grid_view</span>
+<p class="text-sm font-medium">Dashboard</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-text-secondary">
+<span class="material-symbols-outlined">shopping_cart</span>
+<p class="text-sm font-medium">Ventas</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-dark text-white">
+<span class="material-symbols-outlined fill-1">payments</span>
+<p class="text-sm font-medium">Caja</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-text-secondary">
+<span class="material-symbols-outlined">bar_chart</span>
+<p class="text-sm font-medium">Reportes</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-text-secondary">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium">Configuración</p>
+</div>
+</nav>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-background-dark">
+<div class="flex items-center justify-between px-8 py-6 border-b border-border-dark">
+<div class="flex flex-col gap-1">
+<h2 class="text-white text-3xl font-bold">Cierres de Caja</h2>
+<p class="text-text-secondary text-sm">Historial y gestión de cierres diarios</p>
+</div>
+<button class="bg-surface-dark text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 border border-border-dark">
+<span class="material-symbols-outlined text-lg">add</span>
+                        Nuevo Cierre
+                    </button>
+</div>
+<div class="p-8 flex-1 overflow-auto">
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-surface-dark p-4 rounded-xl border border-border-dark">
+<p class="text-white text-2xl font-bold">$45,280.50</p>
+<p class="text-text-secondary text-sm mt-1">Total acumulado (Oct)</p>
+</div>
+<div class="bg-surface-dark p-4 rounded-xl border border-border-dark">
+<p class="text-white text-2xl font-bold">142</p>
+<p class="text-text-secondary text-sm mt-1">Cierres realizados</p>
+</div>
+<div class="bg-surface-dark p-4 rounded-xl border border-border-dark">
+<p class="text-success text-2xl font-bold">98%</p>
+<p class="text-text-secondary text-sm mt-1">Efectividad sin errores</p>
+</div>
+</div>
+<!-- Table -->
+<div class="w-full overflow-hidden rounded-xl border border-border-dark bg-surface-dark">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-background-dark/50 border-b border-border-dark text-text-secondary text-sm">
+<th class="px-6 py-4 font-medium">ID Referencia</th>
+<th class="px-6 py-4 font-medium">Fecha</th>
+<th class="px-6 py-4 font-medium">Responsable</th>
+<th class="px-6 py-4 font-medium">Monto Total</th>
+<th class="px-6 py-4 font-medium">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-dark text-sm">
+<tr class="bg-surface-dark">
+<td class="px-6 py-4 text-white font-medium">#2024-892</td>
+<td class="px-6 py-4 text-text-secondary">Oct 24, 18:45</td>
+<td class="px-6 py-4 flex items-center gap-2 text-white">
+<div class="w-6 h-6 rounded-full bg-cover bg-center" data-alt="User Avatar Small" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAGlO76xtiNkXQkCAhJ5VCMEHGXAXFiUXau8Kkr3f3vMwtdqSlgtS-xC0MdfsA3Wv8zZuWG3_z36_vq4_qfGXpBsolJFGLK1GE6YOdb-kVHvb9rZ9dU2BD8ygncRbkbAnm6M8FWnrxCAJgwGN09OKiq61w8Rk_D8AvDVgaWt4T9COXYqjfbDVFtQGtsWzUV2NqZ6Nc2YBvjhKKO1EmZvdnqXjTefNaLcR0ykqTjweXK2CsBnt8qTcqvXmcqziztcl1KcDSN4baFsKA')"></div>
+                                        Carlos M.
+                                    </td>
+<td class="px-6 py-4 text-white">$12,450.00</td>
+<td class="px-6 py-4"><span class="bg-success/20 text-success px-2 py-1 rounded text-xs font-bold">Equilibrado</span></td>
+</tr>
+<!-- More rows simulated visually -->
+<tr class="bg-surface-dark opacity-75">
+<td class="px-6 py-4 text-white">#2024-891</td>
+<td class="px-6 py-4 text-text-secondary">Oct 24, 14:00</td>
+<td class="px-6 py-4 flex items-center gap-2 text-white">
+<div class="w-6 h-6 rounded-full bg-cover bg-center" data-alt="User Avatar Small" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDWYXy7hsKSX9XbJ5L6jdbHugtUZmyMTV0FHUhp0Y_pqtSr-JD1D_HQ2by-YEdkjybDpsGsI9dPaB64_tqqRBpUwvcnvJIiGE4WIDneKpP_TAhzyjH3SV0GXMtnl62xXMP2i8oQT74icAcpjE6Q0cCS0QdZgA6cHTvGLD6fA7_8Q86UYiGZXvdPHQ754UKLIBK6DF_fGRT5lWLaon-BnmnhbZXdKivX7hOzxPWqi1iunLeWrQQmufivW_uXwujNXG6eI8Tl-Tz0T3o')"></div>
+                                        Ana R.
+                                    </td>
+<td class="px-6 py-4 text-white">$8,230.50</td>
+<td class="px-6 py-4"><span class="bg-success/20 text-success px-2 py-1 rounded text-xs font-bold">Equilibrado</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Overlay / Side Drawer -->
+<div class="absolute inset-0 z-50 flex justify-end">
+<!-- Backdrop interaction layer (invisible but clickable to close) -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity"></div>
+<!-- Drawer Panel -->
+<div class="relative w-full max-w-[500px] h-full bg-[#1A1D21] border-l border-border-dark shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
+<!-- Drawer Header -->
+<div class="px-6 py-5 border-b border-border-dark flex items-center justify-between bg-[#1A1D21]">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h2 class="text-white text-xl font-bold tracking-tight">Cierre #2024-892</h2>
+<span class="px-2.5 py-0.5 rounded-full bg-success/10 text-success text-xs font-bold uppercase tracking-wide border border-success/20">
+                                Equilibrado
+                            </span>
+</div>
+<p class="text-text-secondary text-sm">Oct 24, 2023 • 18:45 PM</p>
+</div>
+<button class="text-text-secondary hover:text-white transition-colors p-1 rounded-md hover:bg-surface-dark">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Content (Scrollable) -->
+<div class="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+<!-- Responsible Party Card -->
+<div class="bg-surface-dark rounded-xl p-4 flex items-center justify-between border border-border-dark shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-cover bg-center border-2 border-background-dark" data-alt="Responsible Supervisor Avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDw-mygUetijjoNa9jX99886yA9ir6oE_SlkKysiC9LwjEpLM2DUsjGNUpW_RR89j4LM2mb7rkBN01ga-HZOArlMe88kZH4-9lO4CvDXj-xE-68MiLyPOJu_6EgAGEp7QibI4Oz4oaL3nkuUfW6n0WhKH30uPAr3gWmn-W0eH_8HTkapoGfAmnyLvxuBd-CcKft33Je44ZNeDa5dBmmJ3w1_vXldVjIWT4UwA5OpJ8Ysj3z0HXYTcBI3OF0sBeJ4p6V1HaIFrEwoC0')"></div>
+<div>
+<p class="text-white text-sm font-bold">Carlos Mendoza</p>
+<p class="text-text-secondary text-xs">Supervisor de Turno</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-text-secondary text-xs mb-0.5">ID Empleado</p>
+<p class="text-white text-sm font-medium font-mono">EMP-042</p>
+</div>
+</div>
+<!-- Main Total Display -->
+<div class="flex flex-col items-center justify-center py-4">
+<p class="text-text-secondary text-sm font-medium mb-1">Total Recaudado</p>
+<h3 class="text-white text-4xl font-bold tracking-tight">$12,450.00</h3>
+</div>
+<!-- Summary Grid -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-dark/50 p-3 rounded-lg border border-border-dark/50">
+<div class="flex items-center gap-2 mb-1 text-text-secondary">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span class="text-xs font-medium uppercase">Transacciones</span>
+</div>
+<p class="text-white text-lg font-bold">142</p>
+</div>
+<div class="bg-surface-dark/50 p-3 rounded-lg border border-border-dark/50">
+<div class="flex items-center gap-2 mb-1 text-text-secondary">
+<span class="material-symbols-outlined text-[18px]">savings</span>
+<span class="text-xs font-medium uppercase">Fondo Inicial</span>
+</div>
+<p class="text-white text-lg font-bold">$2,000.00</p>
+</div>
+</div>
+<!-- Breakdown by Method -->
+<div>
+<h4 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">Desglose por Método</h4>
+<div class="flex flex-col gap-2">
+<!-- Cash Row -->
+<div class="group flex items-center justify-between p-3 rounded-lg bg-surface-dark border border-transparent hover:border-border-dark transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-background-dark flex items-center justify-center text-text-secondary">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+</div>
+<span class="text-white text-sm font-medium">Efectivo</span>
+</div>
+<span class="text-white font-mono font-medium">$4,200.00</span>
+</div>
+<!-- Card Row -->
+<div class="group flex items-center justify-between p-3 rounded-lg bg-surface-dark border border-transparent hover:border-border-dark transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-background-dark flex items-center justify-center text-text-secondary">
+<span class="material-symbols-outlined text-[18px]">credit_card</span>
+</div>
+<span class="text-white text-sm font-medium">Tarjeta Crédito/Débito</span>
+</div>
+<span class="text-white font-mono font-medium">$7,800.00</span>
+</div>
+<!-- Mobile Row -->
+<div class="group flex items-center justify-between p-3 rounded-lg bg-surface-dark border border-transparent hover:border-border-dark transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-background-dark flex items-center justify-center text-text-secondary">
+<span class="material-symbols-outlined text-[18px]">smartphone</span>
+</div>
+<span class="text-white text-sm font-medium">Pago Móvil / QR</span>
+</div>
+<span class="text-white font-mono font-medium">$450.00</span>
+</div>
+</div>
+</div>
+<!-- Discrepancy Section -->
+<div class="bg-surface-dark rounded-xl border border-border-dark overflow-hidden">
+<div class="bg-background-dark/30 px-4 py-3 border-b border-border-dark flex items-center gap-2">
+<span class="material-symbols-outlined text-text-secondary text-[20px]">fact_check</span>
+<span class="text-white text-sm font-bold">Verificación de Caja</span>
+</div>
+<div class="p-4 space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-text-secondary">Total Esperado (Sistema)</span>
+<span class="text-white font-mono">$12,450.00</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-text-secondary">Total Real (Conteo)</span>
+<span class="text-white font-mono">$12,450.00</span>
+</div>
+<div class="h-px bg-border-dark my-2"></div>
+<div class="flex justify-between items-center">
+<span class="text-white font-medium text-sm">Diferencia</span>
+<span class="text-success font-bold font-mono text-lg">$0.00</span>
+</div>
+</div>
+</div>
+<!-- Notes Section (Optional) -->
+<div>
+<h4 class="text-white text-sm font-bold mb-2 uppercase tracking-wider">Notas del Supervisor</h4>
+<p class="text-text-secondary text-sm leading-relaxed bg-surface-dark/50 p-3 rounded-lg border border-border-dark/30">
+                             Cierre sin novedades. Se verificaron todos los vouchers de tarjeta. El fondo de caja para mañana queda apartado en sobre #A2.
+                         </p>
+</div>
+</div>
+<!-- Drawer Footer (Sticky) -->
+<div class="p-6 border-t border-border-dark bg-[#1A1D21] flex flex-col gap-3">
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+                        Exportar Reporte PDF
+                    </button>
+<button class="w-full flex items-center justify-center gap-2 bg-transparent hover:bg-surface-dark text-text-secondary font-medium py-3 px-4 rounded-lg transition-colors border border-border-dark">
+<span class="material-symbols-outlined text-[20px]">print</span>
+                        Imprimir Comprobante
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

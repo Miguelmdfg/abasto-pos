@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BillingSystem - Advanced Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d59f2",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#0a0a0b",
+                        "card-dark": "#161618",
+                        "border-dark": "#26262a",
+                        "neon-green": "#00f59b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "lg": "8px",
+                        "xl": "12px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .chart-glow-blue {
+            filter: drop-shadow(0 0 8px rgba(13, 89, 242, 0.4));
+        }
+        .chart-glow-green {
+            filter: drop-shadow(0 0 8px rgba(0, 245, 155, 0.4));
+        }
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #26262a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Billing<span class="text-primary">Sys</span></h1>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-semibold text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-medium text-sm">Ventas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium text-sm">Productos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium text-sm">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-medium text-sm">Reportes</span>
+</a>
+<div class="pt-4 pb-2 px-3 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">System</div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium text-sm">Configuración</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-border-dark">
+<div class="flex items-center gap-3 p-2 rounded-lg bg-slate-50 dark:bg-white/5">
+<div class="size-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">JD</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">John Doe</p>
+<p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Administrator</p>
+</div>
+<button class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+<span class="material-symbols-outlined text-lg">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto bg-background-light dark:bg-background-dark">
+<!-- Top Header -->
+<header class="h-16 border-b border-slate-200 dark:border-border-dark bg-white/80 dark:bg-card-dark/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold">Dashboard Overview</h2>
+<div class="h-4 w-px bg-slate-200 dark:border-border-dark"></div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg cursor-pointer border border-slate-200 dark:border-border-dark hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span class="text-xs font-semibold">Oct 1 - Oct 31, 2023</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-64 bg-slate-100 dark:bg-white/5 border-none focus:ring-1 focus:ring-primary rounded-lg pl-10 py-1.5 text-xs" placeholder="Search data..." type="text"/>
+</div>
+<button class="size-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="size-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-xl">dark_mode</span>
+</button>
+</div>
+</header>
+<div class="p-8 max-w-7xl mx-auto w-full space-y-6">
+<!-- KPI Top Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Ventas del Día -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-neon-green text-xs font-bold flex items-center gap-1 bg-neon-green/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +12.5%
+                            </span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Ventas del día</p>
+<h3 class="text-3xl font-extrabold tracking-tight mt-1">$4,250.00</h3>
+</div>
+<div class="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[70%]"></div>
+</div>
+</div>
+<!-- Ganancia Bruta -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-neon-green/10 rounded-lg text-neon-green">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<span class="text-neon-green text-xs font-bold flex items-center gap-1 bg-neon-green/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +8.2%
+                            </span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Ganancia bruta</p>
+<h3 class="text-3xl font-extrabold tracking-tight mt-1">$1,820.50</h3>
+</div>
+<div class="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-neon-green rounded-full w-[45%]"></div>
+</div>
+</div>
+<!-- Productos más vendidos -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-orange-500/10 rounded-lg text-orange-500">
+<span class="material-symbols-outlined">star</span>
+</div>
+<span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">Hoy</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Más vendido</p>
+<h3 class="text-2xl font-extrabold tracking-tight mt-1 truncate">Premium SaaS Plan</h3>
+</div>
+<div class="flex -space-x-2">
+<div class="size-7 rounded-full bg-slate-200 dark:bg-white/10 border-2 border-white dark:border-card-dark flex items-center justify-center text-[10px] font-bold">P1</div>
+<div class="size-7 rounded-full bg-slate-200 dark:bg-white/10 border-2 border-white dark:border-card-dark flex items-center justify-center text-[10px] font-bold">P2</div>
+<div class="size-7 rounded-full bg-slate-200 dark:bg-white/10 border-2 border-white dark:border-card-dark flex items-center justify-center text-[10px] font-bold">P3</div>
+<div class="size-7 rounded-full bg-primary text-white border-2 border-white dark:border-card-dark flex items-center justify-center text-[10px] font-bold">+5</div>
+</div>
+</div>
+</div>
+<!-- Main Charts Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Sales per Day - Bar Chart -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-bold">Ventas por día</h4>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer">more_horiz</span>
+</div>
+<div class="h-64 flex items-end justify-between gap-2 px-2">
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-sm group-hover:bg-primary/40 transition-all cursor-pointer h-32"></div>
+<span class="text-[10px] font-bold text-slate-400">Lun</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-sm group-hover:bg-primary/40 transition-all cursor-pointer h-40"></div>
+<span class="text-[10px] font-bold text-slate-400">Mar</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-sm group-hover:bg-primary/40 transition-all cursor-pointer h-24"></div>
+<span class="text-[10px] font-bold text-slate-400">Mie</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-sm group-hover:bg-primary/40 transition-all cursor-pointer h-52"></div>
+<span class="text-[10px] font-bold text-slate-400">Jue</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-sm group-hover:bg-primary/40 transition-all cursor-pointer h-44"></div>
+<span class="text-[10px] font-bold text-slate-400">Vie</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-sm group-hover:bg-primary/40 transition-all cursor-pointer h-56"></div>
+<span class="text-[10px] font-bold text-slate-400">Sab</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary chart-glow-blue rounded-t-sm transition-all cursor-pointer h-60"></div>
+<span class="text-[10px] font-bold text-primary">Dom</span>
+</div>
+</div>
+</div>
+<!-- Hourly Sales - Line Chart Simulation -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-bold">Ventas por hora</h4>
+<div class="flex gap-2">
+<span class="text-[10px] flex items-center gap-1"><span class="size-1.5 rounded-full bg-primary"></span> Ventas</span>
+<span class="text-[10px] flex items-center gap-1"><span class="size-1.5 rounded-full bg-neon-green"></span> Proyección</span>
+</div>
+</div>
+<div class="h-64 relative flex items-center justify-center">
+<!-- SVG Drawing of Line Chart -->
+<svg class="w-full h-full" viewbox="0 0 400 200">
+<path class="chart-glow-blue" d="M0 160 Q 50 150, 100 120 T 200 80 T 300 140 T 400 40" fill="transparent" stroke="url(#blueGradient)" stroke-width="4"></path>
+<path d="M0 160 Q 50 150, 100 120 T 200 80 T 300 140 T 400 40" fill="url(#fillGradient)" stroke="white" stroke-opacity="0.1" stroke-width="4"></path>
+<defs>
+<lineargradient id="blueGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#0d59f2"></stop>
+<stop offset="100%" stop-color="#00f59b"></stop>
+</lineargradient>
+<lineargradient id="fillGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#0d59f2" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#0d59f2" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Points -->
+<circle cx="100" cy="120" fill="#0d59f2" r="4"></circle>
+<circle cx="200" cy="80" fill="#0d59f2" r="4"></circle>
+<circle cx="400" cy="40" fill="#00f59b" r="4"></circle>
+</svg>
+<!-- Hour Labels Overlay -->
+<div class="absolute bottom-0 w-full flex justify-between text-[10px] font-bold text-slate-400 px-2">
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+<span>24:00</span>
+</div>
+</div>
+</div>
+<!-- Payment Methods - Donut Chart -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl">
+<h4 class="font-bold mb-6">Métodos de Pago</h4>
+<div class="flex items-center gap-8 h-48">
+<div class="relative size-40 flex items-center justify-center">
+<svg class="size-full transform -rotate-90" viewbox="0 0 36 36">
+<!-- Background circle -->
+<circle class="text-slate-100 dark:text-white/5" cx="18" cy="18" fill="transparent" r="16" stroke="currentColor" stroke-width="3"></circle>
+<!-- Segments -->
+<circle class="chart-glow-blue" cx="18" cy="18" fill="transparent" r="16" stroke="#0d59f2" stroke-dasharray="65, 100" stroke-linecap="round" stroke-width="3"></circle>
+<circle class="chart-glow-green" cx="18" cy="18" fill="transparent" r="16" stroke="#00f59b" stroke-dasharray="20, 100" stroke-dashoffset="-65" stroke-linecap="round" stroke-width="3"></circle>
+<circle cx="18" cy="18" fill="transparent" r="16" stroke="#f59e0b" stroke-dasharray="15, 100" stroke-dashoffset="-85" stroke-linecap="round" stroke-width="3"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-2xl font-black">100%</span>
+<span class="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Transacciones</span>
+</div>
+</div>
+<div class="flex-1 space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded bg-primary"></span>
+<span class="text-xs font-semibold">Tarjeta</span>
+</div>
+<span class="text-xs font-bold">65%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded bg-neon-green"></span>
+<span class="text-xs font-semibold">Transferencia</span>
+</div>
+<span class="text-xs font-bold">20%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded bg-orange-400"></span>
+<span class="text-xs font-semibold">Efectivo</span>
+</div>
+<span class="text-xs font-bold">15%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Ranking - Progress Bars -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark p-6 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-bold">Ranking de Productos</h4>
+<button class="text-xs text-primary font-bold hover:underline">Ver todos</button>
+</div>
+<div class="space-y-5">
+<div class="space-y-1.5">
+<div class="flex justify-between text-xs">
+<span class="font-bold">1. Enterprise Monthly Subscription</span>
+<span class="text-slate-500 dark:text-slate-400">$12,400.00</span>
+</div>
+<div class="w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[88%]"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-xs">
+<span class="font-bold">2. Professional License Yearly</span>
+<span class="text-slate-500 dark:text-slate-400">$8,200.00</span>
+</div>
+<div class="w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[65%]"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-xs">
+<span class="font-bold">3. API Usage Top-up</span>
+<span class="text-slate-500 dark:text-slate-400">$3,150.00</span>
+</div>
+<div class="w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[42%]"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-xs">
+<span class="font-bold">4. Custom Implementation Fee</span>
+<span class="text-slate-500 dark:text-slate-400">$1,800.00</span>
+</div>
+<div class="w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[20%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Table Section -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-border-dark flex justify-between items-center">
+<h4 class="font-bold">Últimas Transacciones</h4>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-border-dark rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">Exportar CSV</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">Nueva Factura</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-white/2">
+<th class="px-6 py-4">Cliente</th>
+<th class="px-6 py-4">ID Transacción</th>
+<th class="px-6 py-4">Monto</th>
+<th class="px-6 py-4">Estado</th>
+<th class="px-6 py-4">Fecha</th>
+<th class="px-6 py-4 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-border-dark">
+<tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">AS</div>
+<span class="text-xs font-semibold">Acme Solutions</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">#TRX-99821</td>
+<td class="px-6 py-4 text-xs font-bold">$1,250.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-neon-green/10 text-neon-green text-[10px] font-black rounded-full uppercase">Completado</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-500">Hace 5 min</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">GL</div>
+<span class="text-xs font-semibold">Global Logistics</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">#TRX-99820</td>
+<td class="px-6 py-4 text-xs font-bold">$450.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-[10px] font-black rounded-full uppercase">Pendiente</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-500">Hace 12 min</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">TT</div>
+<span class="text-xs font-semibold">Terra Technologies</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">#TRX-99819</td>
+<td class="px-6 py-4 text-xs font-bold">$2,100.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-neon-green/10 text-neon-green text-[10px] font-black rounded-full uppercase">Completado</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-500">Hace 45 min</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

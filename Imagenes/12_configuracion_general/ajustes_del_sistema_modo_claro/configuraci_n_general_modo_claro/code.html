@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SaaS Admin - General Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .sidebar-item-active {
+            background-color: rgba(236, 91, 19, 0.1);
+            color: #ec5b13;
+            border-right: 3px solid #ec5b13;
+        }
+        input:focus {
+            border-color: #ec5b13 !important;
+            ring-color: #ec5b13 !important;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hidden md:flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">rocket_launch</span>
+</div>
+<span class="font-bold text-lg tracking-tight">SaaSCore</span>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Settings</div>
+<a class="flex items-center gap-3 px-4 py-3 sidebar-item-active transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">General</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="text-sm font-medium">Security</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Team Members</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-medium">Billing</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">api</span>
+<span class="text-sm font-medium">API Keys</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2">
+<img class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqyBDPJNw5j3NftCFowNN61XIronUD8_8eY9s0jliy12l2gUpzsEgk6_Pv2XR1PoZH5uxby6SalUu6Yz_ZvOupdsJ3EMKooYwKON6lKT7GwGcyhTRxIgJxt40L4610oM_eWHy4xxMnOfh4nEMov0Vq4k4kVfJrnUlfApAAxMPN-gdONDyew1y7FIhtVrE619I_TvqDbmCOAFC8mZ1mmOWrFAlczqFO2b0e1rYDDeQ2HSd1fnOCR2rlPdhmOFl-QMPa_HnDGCAWfX8"/>
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Alex Rivera</span>
+<span class="text-xs text-slate-500">Admin Account</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background-light dark:bg-background-dark">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 px-8 flex items-center justify-between">
+<h2 class="text-xl font-bold">General Settings</h2>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all">
+                    Save Changes
+                </button>
+</div>
+</header>
+<!-- Content -->
+<div class="p-8 max-w-4xl mx-auto w-full space-y-8 pb-24">
+<!-- Logo Upload Section -->
+<section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-start justify-between mb-6">
+<div>
+<h3 class="text-lg font-bold">Business Logo</h3>
+<p class="text-sm text-slate-500">Update your company brand identity appearing on invoices and emails.</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative group">
+<div class="w-24 h-24 rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-slate-400 text-3xl group-hover:hidden">image</span>
+<img class="w-full h-full object-contain hidden group-data-[has-image=true]:block" data-alt="Company logo preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcxKe0TUt4CW98GtDRY7PHXW2glbbsSS3xP4dRGtXGZfEIlENDrkjlsG9p0oHigoV0fmJ6Dea6eRvy8oE_Lu-L5g7ZfDB9dmQC_P55dVNZUpLKfB8lw9GykuyLUom9quRL31ccmmv_-YyL4LYEcy1GN-n1TfRxjKZP5TZ_IACu1KBdIAbOjSjuyTbnXjRrzxKxjndAODNb4NPJvCicc_8lazlZFgiK_NrqsttFPNtM_tbg9TxaIrqmUdLedv3yRd0YGjgewHwC1mQ"/>
+</div>
+<button class="absolute -bottom-2 -right-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1.5 rounded-full shadow-lg text-primary">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<div class="space-y-2">
+<div class="flex gap-3">
+<button class="text-sm bg-primary/10 text-primary px-4 py-2 rounded-lg font-medium hover:bg-primary/20 transition-colors">Upload New</button>
+<button class="text-sm text-slate-500 px-4 py-2 hover:text-red-500 transition-colors">Remove</button>
+</div>
+<p class="text-xs text-slate-400">Allowed formats: PNG, SVG, or JPG. Max file size 2MB.</p>
+</div>
+</div>
+</section>
+<!-- Daily Exchange Rate -->
+<section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="mb-6">
+<h3 class="text-lg font-bold">Financial Settings</h3>
+<p class="text-sm text-slate-500">Manage currency conversion and credit thresholds.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-sm font-semibold flex items-center gap-1">
+                            Daily Exchange Rate (USD to EUR)
+                            <span class="material-symbols-outlined text-xs text-slate-400 cursor-help" title="Base conversion rate used for all transactions today">info</span>
+</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">€</span>
+<input class="w-full pl-8 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" step="0.0001" type="number" value="0.9245"/>
+</div>
+<p class="text-[11px] text-slate-400 italic">Last updated: 14 minutes ago via Bloomberg API</p>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Global Debt Limit</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+<input class="w-full pl-8 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" type="text" value="50,000.00"/>
+</div>
+<p class="text-[11px] text-slate-400 italic">Maximum credit allowed per organization</p>
+</div>
+</div>
+</section>
+<!-- Payment Methods -->
+<section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="mb-6">
+<h3 class="text-lg font-bold">Payment Methods</h3>
+<p class="text-sm text-slate-500">Enable or disable available checkout options for your customers.</p>
+</div>
+<div class="space-y-4">
+<!-- Stripe -->
+<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-[#635BFF]/10 text-[#635BFF] flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<div>
+<p class="text-sm font-bold">Stripe Payments</p>
+<p class="text-xs text-slate-500">Credit card, Apple Pay, Google Pay</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- PayPal -->
+<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-[#003087]/10 text-[#003087] flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div>
+<p class="text-sm font-bold">PayPal Checkout</p>
+<p class="text-xs text-slate-500">One-click payments via PayPal balance</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Bank Transfer -->
+<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div>
+<p class="text-sm font-bold">Direct Bank Transfer</p>
+<p class="text-xs text-slate-500">Manual verification of SEPA/Wire transfers</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Business Data -->
+<section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="mb-6">
+<h3 class="text-lg font-bold">Business Information</h3>
+<p class="text-sm text-slate-500">Legal details for your tax compliance and invoicing.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-sm font-semibold">Legal Entity Name</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" type="text" value="SaaSCore Technologies Inc."/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Tax ID / VAT Number</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" type="text" value="US-9823410293"/>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="text-sm font-semibold">Registered Office Address</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" type="text" value="1200 Innovation Way, Suite 400, San Francisco, CA 94105"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Contact Email for Finance</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" type="email" value="billing@saascore.tech"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Primary Currency</label>
+<select class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary appearance-none">
+<option selected="" value="USD">USD - US Dollar</option>
+<option value="EUR">EUR - Euro</option>
+<option value="GBP">GBP - British Pound</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="bg-red-50/50 dark:bg-red-900/10 p-6 rounded-xl border border-red-200 dark:border-red-900/30">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-lg font-bold text-red-700 dark:text-red-500">Delete Account</h3>
+<p class="text-sm text-red-600/70 dark:text-red-400/70">Permanently remove your business account and all associated data.</p>
+</div>
+<button class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors">
+                        Delete Organization
+                    </button>
+</div>
+</section>
+</div>
+<!-- Bottom Action Bar (Fixed Mobile) -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-center shadow-2xl z-20">
+<button class="w-full max-w-sm bg-primary hover:bg-primary/90 text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/30 transition-all">
+                Save All Changes
+            </button>
+</div>
+</main>
+</div>
+</body></html>

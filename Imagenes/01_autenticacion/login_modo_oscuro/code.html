@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login Screen - Dark Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-dark": "#1e293b", // Custom surface for the card
+                        "border-dark": "#334155", // Custom border for dark mode
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Force dark mode styles since the request is specifically for a dark mode screen */
+        body {
+            background-color: #101622;
+            color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="font-display antialiased bg-background-dark min-h-screen flex flex-col items-center justify-center p-4">
+<!-- Background Pattern/Gradient (Subtle) -->
+<div class="fixed inset-0 z-0 pointer-events-none opacity-40" data-alt="Subtle blue radial gradient at top of dark background" style="background: radial-gradient(circle at 50% 0%, #1e3a8a 0%, transparent 50%);"></div>
+<!-- Main Container -->
+<div class="relative z-10 w-full max-w-[440px] flex flex-col gap-6">
+<!-- Logo Section -->
+<div class="flex justify-center mb-2">
+<div class="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined text-white text-[28px]">
+                    account_balance_wallet
+                </span>
+</div>
+</div>
+<!-- Login Card -->
+<div class="bg-surface-dark border border-border-dark rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-opacity-90">
+<div class="p-8 sm:p-10 flex flex-col gap-6">
+<!-- Header -->
+<div class="text-center">
+<h1 class="text-white text-2xl font-bold tracking-tight mb-2">Iniciar sesión</h1>
+<p class="text-slate-400 text-sm font-medium">Bienvenido de nuevo al sistema de facturación</p>
+</div>
+<!-- Form -->
+<form class="flex flex-col gap-5">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-slate-300" for="email">
+                            Correo electrónico
+                        </label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-500 group-focus-within:text-primary transition-colors duration-200">
+                                    mail
+                                </span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3 bg-background-dark border border-border-dark rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 text-sm" id="email" placeholder="nombre@empresa.com" type="email" value=""/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="block text-sm font-medium text-slate-300" for="password">
+                                Contraseña
+                            </label>
+<a class="text-xs font-medium text-primary hover:text-blue-400 transition-colors" href="#">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-500 group-focus-within:text-primary transition-colors duration-200">
+                                    lock
+                                </span>
+</div>
+<input class="block w-full pl-11 pr-11 py-3 bg-background-dark border border-border-dark rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 text-sm" id="password" placeholder="••••••••" type="password" value=""/>
+<button class="absolute inset-y-0 right-0 pr-3.5 flex items-center cursor-pointer text-slate-500 hover:text-slate-300 transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">
+                                    visibility_off
+                                </span>
+</button>
+</div>
+<!-- Minimalist error message example (hidden by default, shown here for structure) -->
+<!-- <p class="text-red-400 text-xs mt-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">error</span>
+                            Contraseña incorrecta
+                        </p> -->
+</div>
+<!-- Remember Me Checkbox -->
+<div class="flex items-center">
+<input class="h-4 w-4 rounded border-border-dark bg-background-dark text-primary focus:ring-primary focus:ring-offset-0 focus:ring-offset-transparent" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block text-sm text-slate-400" for="remember-me">
+                            Recordar este dispositivo
+                        </label>
+</div>
+<!-- Submit Button -->
+<button class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-dark focus:ring-primary transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 mt-2" type="button">
+                        Entrar
+                    </button>
+</form>
+<!-- Footer / Sign Up -->
+<div class="text-center pt-2 border-t border-border-dark/50">
+<p class="text-sm text-slate-400">
+                        ¿No tienes una cuenta? 
+                        <a class="font-semibold text-white hover:text-primary transition-colors ml-1" href="#">
+                            Contactar soporte
+                        </a>
+</p>
+</div>
+</div>
+<!-- Bottom decorative bar -->
+<div class="h-1.5 w-full bg-gradient-to-r from-blue-600 via-primary to-blue-400"></div>
+</div>
+<!-- Footer Links -->
+<div class="flex justify-center gap-6 text-xs text-slate-500 mt-2">
+<a class="hover:text-slate-300 transition-colors" href="#">Privacidad</a>
+<a class="hover:text-slate-300 transition-colors" href="#">Términos</a>
+<a class="hover:text-slate-300 transition-colors" href="#">Ayuda</a>
+</div>
+</div>
+</body></html>

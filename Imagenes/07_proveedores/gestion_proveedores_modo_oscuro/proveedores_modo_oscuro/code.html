@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Supplier Management Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-dark": "#1a2233",
+                        "accent-emerald": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .modal-blur {
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex">
+<!-- Sidebar -->
+<aside class="fixed inset-y-0 left-0 w-64 bg-slate-100 dark:bg-surface-dark border-r border-slate-200 dark:border-slate-800 flex flex-col z-40">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">SaaS Admin</h1>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium text-sm">Suppliers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">inventory</span>
+<span class="font-medium text-sm">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-medium text-sm">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-medium text-sm">Analytics</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64 flex flex-col">
+<!-- Top Bar -->
+<header class="sticky top-0 h-16 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 z-30">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full bg-slate-100 dark:bg-surface-dark border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary transition-all" placeholder="Search suppliers or orders..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+                    Register Purchase
+                </button>
+<div class="h-6 w-[1px] bg-slate-200 dark:bg-slate-800"></div>
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="Corporate user profile avatar photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAppMcUF3dqeYx22NXeTRFPHnndP6liwkuXPPoc0YLy7WlnQ_zackYFllDp3eVcj_AVhk0UOzOiQEsBndY_XyVa3n03c1ij2nTHbtwhAmaXH_beXblCbLj-aIE3THF0DlHE_1aFWbmfSGTU9g-lTUAfiHTkHuJGe19Jf6i3LV7bHaYKYGcz2qFYYqNvSdIMPeitT6nIRWd-HxWfDgxvYS_tK02ID-0UkyNYx7InGKjwSCIJYGvlMPxgsntuvaUdNJGiSWVNqCR-LNA"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 space-y-8 max-w-7xl mx-auto w-full">
+<!-- Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Suppliers</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-2xl font-bold">128</h3>
+<span class="text-accent-emerald text-sm font-medium flex items-center">+5.2% <span class="material-symbols-outlined text-xs">trending_up</span></span>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Active Orders</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-2xl font-bold">42</h3>
+<span class="text-primary text-sm font-medium flex items-center">Stable</span>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Monthly Spend</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-2xl font-bold">$14,200</h3>
+<span class="text-accent-emerald text-sm font-medium flex items-center">+12% <span class="material-symbols-outlined text-xs">trending_up</span></span>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Inventory Health</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-2xl font-bold">94%</h3>
+<span class="text-accent-emerald text-sm font-medium flex items-center">+1% <span class="material-symbols-outlined text-xs">trending_up</span></span>
+</div>
+</div>
+</div>
+<!-- Main Table Card -->
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h2 class="text-lg font-bold">Supplier Directory</h2>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Export CSV</button>
+<button class="px-3 py-1.5 text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Filters</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/30">
+<th class="px-6 py-4">Name</th>
+<th class="px-6 py-4">Contact</th>
+<th class="px-6 py-4">Primary Products</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Last Activity</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-600 dark:text-slate-400">TL</div>
+<span class="font-semibold text-sm">TechLogistics Corp</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">contact@techlog.com</td>
+<td class="px-6 py-4">
+<div class="flex gap-1">
+<span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold">Electronics</span>
+<span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold">Sensors</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-accent-emerald text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span> Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">2 hours ago</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-600 dark:text-slate-400">GP</div>
+<span class="font-semibold text-sm">Global Parts Inc</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">sales@globalparts.io</td>
+<td class="px-6 py-4">
+<div class="flex gap-1">
+<span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold">Hardware</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-accent-emerald text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span> Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">Yesterday</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-600 dark:text-slate-400">SS</div>
+<span class="font-semibold text-sm">Swift Sourcing</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">info@swiftsource.com</td>
+<td class="px-6 py-4">
+<div class="flex gap-1">
+<span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold">Logistics</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-orange-500 text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Pending
+                                    </span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400">3 days ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center modal-blur bg-black/40">
+<!-- Modal Window -->
+<div class="bg-white dark:bg-surface-dark w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 flex overflow-hidden">
+<!-- Left Side: Form -->
+<div class="flex-1 p-8 overflow-y-auto">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h2 class="text-2xl font-bold tracking-tight">Register Purchase</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Enter transaction details to update inventory levels.</p>
+</div>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="text-sm font-semibold">Select Supplier</label>
+<select class="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-lg text-sm px-4 py-2.5 focus:ring-primary focus:border-primary">
+<option>TechLogistics Corp</option>
+<option>Global Parts Inc</option>
+<option>Swift Sourcing</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold">Product</label>
+<input class="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-lg text-sm px-4 py-2.5" type="text" value="Premium Circuit Boards v2"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Category</label>
+<div class="px-4 py-2.5 bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-500">Electronics</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold">Quantity</label>
+<input class="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-lg text-sm px-4 py-2.5" type="number" value="500"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Unit Cost ($)</label>
+<input class="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-lg text-sm px-4 py-2.5" type="number" value="12.50"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold">Shipping</label>
+<input class="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-lg text-sm px-4 py-2.5" type="number" value="45.00"/>
+</div>
+</div>
+<div class="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+<div class="flex justify-between items-center">
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Total Investment</span>
+<span class="text-2xl font-bold text-primary">$6,295.00</span>
+</div>
+</div>
+<div class="flex gap-3 pt-4">
+<button class="flex-1 bg-primary text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+                            Confirm &amp; Update Inventory
+                        </button>
+<button class="px-6 bg-slate-100 dark:bg-background-dark border border-slate-200 dark:border-slate-800 text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" type="button">Cancel</button>
+</div>
+</form>
+</div>
+<!-- Right Side: Recent History -->
+<div class="w-80 bg-slate-50 dark:bg-background-dark border-l border-slate-200 dark:border-slate-800 p-8">
+<h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6">Recent History</h3>
+<div class="space-y-6 relative">
+<!-- Timeline Line -->
+<div class="absolute left-[15px] top-0 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-800"></div>
+<!-- History Items -->
+<div class="relative flex gap-4">
+<div class="z-10 w-8 h-8 rounded-full bg-accent-emerald/20 flex items-center justify-center text-accent-emerald">
+<span class="material-symbols-outlined text-sm">done_all</span>
+</div>
+<div>
+<p class="text-sm font-bold">Purchase #1024 completed</p>
+<p class="text-xs text-slate-500 mt-1">Apex Tools • 10m ago</p>
+</div>
+</div>
+<div class="relative flex gap-4">
+<div class="z-10 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">person_add</span>
+</div>
+<div>
+<p class="text-sm font-bold">New Supplier Added</p>
+<p class="text-xs text-slate-500 mt-1">Apex Tools • 1h ago</p>
+</div>
+</div>
+<div class="relative flex gap-4">
+<div class="z-10 w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500">
+<span class="material-symbols-outlined text-sm">update</span>
+</div>
+<div>
+<p class="text-sm font-bold">Price Update</p>
+<p class="text-xs text-slate-500 mt-1">Circuit Boards (+4%) • 4h ago</p>
+</div>
+</div>
+<div class="relative flex gap-4 opacity-50">
+<div class="z-10 w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined text-sm">local_shipping</span>
+</div>
+<div>
+<p class="text-sm font-bold">Shipment Arrived</p>
+<p class="text-xs text-slate-500 mt-1">TechLogistics • Yesterday</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Efficiency Shortcut Tooltip (Floating) -->
+<div class="fixed bottom-6 right-6 bg-slate-900 text-white text-[10px] font-mono px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-2 shadow-xl">
+<span class="bg-slate-700 px-1 rounded">N</span> New Purchase
+        <span class="text-slate-500">|</span>
+<span class="bg-slate-700 px-1 rounded">⌘ K</span> Command
+    </div>
+</body></html>
