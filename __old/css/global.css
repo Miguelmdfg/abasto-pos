@@ -1,0 +1,89 @@
+<<<<<<< HEAD
+/* GLOBAL STYLES */
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Inter", sans-serif;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #1e293b;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.nav-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.nav-links a {
+  margin-left: 1rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.nav-links a.active {
+  color: #facc15;
+}
+
+.btn-primary {
+  background: #facc15;
+  color: #111827;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+=======
+/* GLOBAL STYLES */
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Inter", sans-serif;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #1e293b;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.nav-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.nav-links a {
+  margin-left: 1rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.nav-links a.active {
+  color: #facc15;
+}
+
+.btn-primary {
+  background: #facc15;
+  color: #111827;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+>>>>>>> NewMiguel

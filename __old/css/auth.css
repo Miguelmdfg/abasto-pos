@@ -1,0 +1,223 @@
+<<<<<<< HEAD
+/* CONTENEDOR PRINCIPAL */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #0f172a;
+  padding: 1rem;
+}
+
+/* TARJETA */
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 0 25px rgba(0,0,0,0.3);
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #facc15;
+}
+
+/* INPUTS */
+.auth-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #facc15;
+}
+
+/* BOTÓN PRINCIPAL */
+.auth-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: #facc15;
+  color: #111827;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.auth-btn:hover {
+  background: #eab308;
+}
+
+/* TEXTO SECUNDARIO */
+.auth-footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.auth-footer a {
+  color: #facc15;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 0 25px rgba(0,0,0,0.3);
+}
+
+/* Asegurar que todos los inputs ocupen el mismo ancho y estén alineados */
+.auth-input {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+=======
+/* CONTENEDOR PRINCIPAL */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #0f172a;
+  padding: 1rem;
+}
+
+/* TARJETA */
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 0 25px rgba(0,0,0,0.3);
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #facc15;
+}
+
+/* INPUTS */
+.auth-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #facc15;
+}
+
+/* BOTÓN PRINCIPAL */
+.auth-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: #facc15;
+  color: #111827;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.auth-btn:hover {
+  background: #eab308;
+}
+
+/* TEXTO SECUNDARIO */
+.auth-footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.auth-footer a {
+  color: #facc15;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: #1e293b;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 0 25px rgba(0,0,0,0.3);
+}
+
+/* Asegurar que todos los inputs ocupen el mismo ancho y estén alineados */
+.auth-input {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+>>>>>>> NewMiguel

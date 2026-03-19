@@ -1,3 +1,7 @@
+**Documentación relacionada:** Para el estado actual de implementación, endpoints, archivos y detalles técnicos del código, ver [FUNCIONALIDADES.md](FUNCIONALIDADES.md).
+
+---
+
 1. VISIÓN GENERAL DEL SISTEMA
 
 El sistema es una plataforma integral de gestión comercial orientada a negocios minoristas que requieren control de inventario, facturación individul, con calculo de IVA al finalizar la facturacion, gestión de deudas, análisis financiero y administración operativa.

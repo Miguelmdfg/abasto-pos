@@ -1,0 +1,19 @@
+/* Tailwind v4 + HeroUI v3: explicit imports to avoid resolver "style" export error */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Tailwind v4 dark mode using `.dark` class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* HeroUI base, components, theme, utilities, variants (exported subpaths only) */
+@import "@heroui/styles/base" layer(base);
+@import "@heroui/styles/components/index.css" layer(components);
+@import "@heroui/styles/themes/default" layer(theme);
+@import "@heroui/styles/utilities";
+@import "@heroui/styles/variants";
+
+@theme {
+  /* Extend or customize your theme here */
+}

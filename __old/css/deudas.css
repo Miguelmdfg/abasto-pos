@@ -1,0 +1,273 @@
+<<<<<<< HEAD
+/* Styles for Deudas page */
+.deudas-container {
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  align-items: flex-start;
+}
+
+.panel {
+  background: #0b1220;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #e6eef8;
+}
+
+.panel h2{ margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: #f1f5f9 }
+
+.clients-panel {
+  width: 420px;
+  overflow: visible;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.detail-panel {
+  flex: 1;
+}
+
+.form-inline {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.form-inline input {
+  padding: 0.5rem;
+  background: #071020;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #e6eef8;
+  border-radius: 6px;
+  min-width: 72px;
+}
+
+/* Allow inputs to grow but leave space for the submit button */
+.form-inline input.flex-grow {
+  flex: 1 1 120px;
+}
+
+/* inputs without flex-grow should keep a reasonable fixed width */
+.form-inline input:not(.flex-grow) {
+  flex: 0 0 140px;
+}
+
+.form-inline button {
+  padding: 0.5rem 0.8rem;
+  background: #1f6feb;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  min-width: 72px;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+
+/* make action buttons in lists smaller and match theme */
+.clients-list button,
+.products-list button{
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #e6eef8;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.clients-list, .products-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.clients-list li {
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  background: rgba(255,255,255,0.01);
+  flex-wrap: wrap;
+}
+
+.clients-list li:hover { background: rgba(255,255,255,0.02); }
+
+.client-name { font-weight: 700; }
+.client-phone { color: #9aa7b8; font-size: 0.9rem; }
+
+.client-amount { font-weight: 800; margin-left: 0.5rem; }
+
+.clients-list .actions{ display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap }
+.clients-list .actions button{ padding:0.18rem 0.45rem; font-size:0.78rem }
+
+.client-detail { padding-top: 0.25rem }
+.client-detail .client-info{ margin-bottom: 1rem }
+.client-detail .client-info strong{ font-size:1.1rem }
+
+.client-detail.hidden { display: none; }
+
+.products-list li {
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255,255,255,0.03);
+}
+
+.total-row { margin-top: 1rem; font-weight: 800; font-size: 1.1rem; }
+.total-high { color: #ff6b6b; }
+.muted { color: #9aa7b8; }
+
+/* product form: product name grows, amount fixed */
+.products .form-inline input.flex-grow{ flex:1 }
+.products .form-inline input[placeholder*="Monto"]{ flex: 0 0 120px }
+
+/* responsive: stack panels on small screens */
+@media (max-width: 900px){
+  .deudas-container{ flex-direction: column }
+  .clients-panel{ width: 100%; max-height: none }
+}
+=======
+/* Styles for Deudas page */
+.deudas-container {
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  align-items: flex-start;
+}
+
+.panel {
+  background: #0b1220;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #e6eef8;
+}
+
+.panel h2{ margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: #f1f5f9 }
+
+.clients-panel {
+  width: 420px;
+  overflow: visible;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.detail-panel {
+  flex: 1;
+}
+
+.form-inline {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.form-inline input {
+  padding: 0.5rem;
+  background: #071020;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #e6eef8;
+  border-radius: 6px;
+  min-width: 72px;
+}
+
+/* Allow inputs to grow but leave space for the submit button */
+.form-inline input.flex-grow {
+  flex: 1 1 120px;
+}
+
+/* inputs without flex-grow should keep a reasonable fixed width */
+.form-inline input:not(.flex-grow) {
+  flex: 0 0 140px;
+}
+
+.form-inline button {
+  padding: 0.5rem 0.8rem;
+  background: #1f6feb;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  min-width: 72px;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+
+/* make action buttons in lists smaller and match theme */
+.clients-list button,
+.products-list button{
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #e6eef8;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.clients-list, .products-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.clients-list li {
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  background: rgba(255,255,255,0.01);
+  flex-wrap: wrap;
+}
+
+.clients-list li:hover { background: rgba(255,255,255,0.02); }
+
+.client-name { font-weight: 700; }
+.client-phone { color: #9aa7b8; font-size: 0.9rem; }
+
+.client-amount { font-weight: 800; margin-left: 0.5rem; }
+
+.clients-list .actions{ display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap }
+.clients-list .actions button{ padding:0.18rem 0.45rem; font-size:0.78rem }
+
+.client-detail { padding-top: 0.25rem }
+.client-detail .client-info{ margin-bottom: 1rem }
+.client-detail .client-info strong{ font-size:1.1rem }
+
+.client-detail.hidden { display: none; }
+
+.products-list li {
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255,255,255,0.03);
+}
+
+.total-row { margin-top: 1rem; font-weight: 800; font-size: 1.1rem; }
+.total-high { color: #ff6b6b; }
+.muted { color: #9aa7b8; }
+
+/* product form: product name grows, amount fixed */
+.products .form-inline input.flex-grow{ flex:1 }
+.products .form-inline input[placeholder*="Monto"]{ flex: 0 0 120px }
+
+/* responsive: stack panels on small screens */
+@media (max-width: 900px){
+  .deudas-container{ flex-direction: column }
+  .clients-panel{ width: 100%; max-height: none }
+}
+>>>>>>> NewMiguel

@@ -2,6 +2,8 @@
 
 Visión del alcance de lo implementado en el sistema.
 
+**Documentación relacionada:** Para requisitos, diseño por módulos, roles (Vendedor/Dueño) y arquitectura objetivo del sistema, ver [informacion.md](informacion.md).
+
 ---
 
 ## 1. Autenticación y usuarios

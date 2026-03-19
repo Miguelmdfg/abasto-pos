@@ -1,82 +1,79 @@
-<<<<<<< HEAD
-# BodegaFlow Backend
+# BodegaFlow
 
-Pequeño backend para BodegaFlow POS usando Express y SQLite.
+Sistema de punto de venta (POS) y gestión para bodegas y pequeños comercios. Permite administrar ventas, inventario, deudas, usuarios y pagos móviles.
 
-Requisitos:
+## Requisitos
 
-- Node.js 16+
-- Ejecutar `npm install` en la carpeta `backend`
+- **Node.js** 16 o superior
+- No se requiere instalar bases de datos externas (el backend usa SQLite)
 
-Instalación y ejecución:
+## Estructura del proyecto
 
-```bash
-cd backend
-npm install
-node server.js
+```
+abasto-pos/
+├── backend/          # Servidor API (Express + SQLite)
+│   ├── routes/       # Rutas: productos, ventas, usuarios, pagomovil, deudas
+│   ├── data/         # Datos en JSON (ej. deudas.json)
+│   ├── database.sqlite
+│   └── server.js
+├── frontend/         # App React 19 + Vite + TypeScript + HeroUI
+│   ├── src/          # Código fuente (App, páginas, estilos)
+│   └── package.json
+├── html/             # Páginas de la interfaz (pos, ventas, inventario, deudas, etc.)
+├── css/              # Estilos (global, auth, pos, inventario, deudas)
+├── js/               # Scripts del frontend
+└── Imagenes/         # Recursos e imágenes
 ```
 
-Rutas principales:
+## Instalación y ejecución
 
-- `/products` - GET, POST, PUT/:id, PATCH/stock/:id, DELETE/:id
-- `/sales` - GET, POST
-- `/users` - POST /register, POST /login, GET / (req header `x-admin` === 'true')
-- `/pagomovil` - GET, POST
-
-Notas:
-
-- Las contraseñas se almacenan hasheadas (bcryptjs).
-- `ventas.productos` se guarda como JSON string.
-- Para listar usuarios, envía el header `x-admin: true` (mecanismo simple para demo).
-=======
-# Bodega-Flow
-
-## Descripción General
-Bodega-Flow es un sistema de gestión para bodegas que permite administrar ventas, inventario, deudas, usuarios y pagos móviles. El sistema está dividido en un backend (servidor) y un frontend (interfaz web), facilitando la gestión diaria de una bodega o pequeño comercio.
-
-## Tecnologías Utilizadas
-- **Backend:** Node.js con Express.js
-- **Base de datos:** Archivos JSON locales (no requiere instalación de bases de datos externas)
-- **Frontend:** HTML, CSS y JavaScript puro
-- **Control de versiones:** Git
-
-## Estructura del Proyecto
-- `backend/`: Lógica del servidor, rutas, manejo de datos y archivos JSON
-  - `routes/`: Rutas para ventas, productos, usuarios, deudas y pagos móviles
-  - `data/`: Archivos JSON con la información persistente
-- `Html/`: Archivos HTML para cada sección del sistema
-- `css/`: Hojas de estilo para la interfaz
-- `js/`: Scripts de frontend para interacción con la UI
-- `public/`: Recursos públicos como imágenes
-
-## Instalación y Ejecución
-1. **Clonar el repositorio:**
+1. **Clonar el repositorio** (si aplica):
    ```bash
    git clone <URL-del-repositorio>
-   cd Bodega-Flow/backend
+   cd abasto-pos
    ```
-2. **Instalar dependencias:**
+
+2. **Instalar dependencias del backend:**
    ```bash
+   cd backend
    npm install
    ```
-3. **Iniciar el servidor:**
+
+3. **Frontend (React + Vite + HeroUI):**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   La app quedará en **http://localhost:5173** (o el puerto que indique Vite).
+
+4. **Iniciar el servidor (backend):**
    ```bash
    node server.js
    ```
-   El servidor se ejecutará por defecto en `http://localhost:3000`.
+   El servidor quedará disponible en **http://localhost:3000**.
 
-4. **Abrir la interfaz:**
-   Abre los archivos HTML desde la carpeta `Html/` en tu navegador o configura un servidor estático para servirlos.
+5. **Usar la interfaz:**  
+   Abre los archivos HTML desde la carpeta `html/` en el navegador (o sirve la carpeta con un servidor estático si lo necesitas).
 
-## Uso
-- Accede a las diferentes páginas HTML según la funcionalidad que necesites (ventas, inventario, deudas, etc.)
-- El backend expone rutas para manejar los datos, que son consumidas por los scripts JS del frontend
+## API del backend
+
+| Recurso     | Métodos y rutas | Descripción |
+|------------|------------------|-------------|
+| **Productos** | `GET /products`, `POST /products`, `PUT /products/:id`, `PATCH /products/stock/:id`, `DELETE /products/:id` | CRUD y ajuste de stock |
+| **Ventas** | `GET /sales`, `POST /sales` | Listar y registrar ventas |
+| **Usuarios** | `POST /users/register`, `POST /users/login`, `GET /users` | Registro, login y listado (admin) |
+| **Pago móvil** | `GET /pagomovil`, `POST /pagomovil` | Listar y registrar pagos móviles |
+| **Deudas** | Rutas en `/deudas` | Gestión de deudas de clientes |
+
+**Notas de la API:**
+
+- Para listar usuarios se requiere el header `x-admin: true` (mecanismo de demo).
+- Las contraseñas se almacenan hasheadas con **bcryptjs**.
+- El campo `ventas.productos` se guarda como cadena JSON.
 
 ## Notas
-- El sistema está pensado para uso local o en una red interna.
-- No requiere base de datos externa, pero los datos se almacenan en archivos JSON en el backend.
-- Puedes personalizar los estilos y la lógica según las necesidades de tu bodega.
 
-## Contacto
-Para dudas o mejoras, contacta al desarrollador original o crea un issue en el repositorio de GitHub.
->>>>>>> NewMiguel
+- Pensado para uso local o en red interna.
+- Base de datos principal: **SQLite** (`backend/database.sqlite`). Algunos datos (por ejemplo deudas) pueden usar archivos JSON en `backend/data/`.
+- Para dudas o mejoras, abre un *issue* en el repositorio o contacta al desarrollador.
