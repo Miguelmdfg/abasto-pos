@@ -5,24 +5,21 @@ Sistema de punto de venta (POS) y gestión para bodegas y pequeños comercios. P
 ## Requisitos
 
 - **Node.js** 16 o superior
-- No se requiere instalar bases de datos externas (el backend usa SQLite)
+- No se requiere instalar bases de datos externas (la API Express legacy usa SQLite)
 
 ## Estructura del proyecto
 
 ```
 abasto-pos/
-├── backend/          # Servidor API (Express + SQLite)
-│   ├── routes/       # Rutas: productos, ventas, usuarios, pagomovil, deudas
-│   ├── data/         # Datos en JSON (ej. deudas.json)
-│   ├── database.sqlite
-│   └── server.js
-├── frontend/         # App React 19 + Vite + TypeScript + HeroUI
-│   ├── src/          # Código fuente (App, páginas, estilos)
-│   └── package.json
-├── html/             # Páginas de la interfaz (pos, ventas, inventario, deudas, etc.)
-├── css/              # Estilos (global, auth, pos, inventario, deudas)
-├── js/               # Scripts del frontend
-└── Imagenes/         # Recursos e imágenes
+├── frontend/         # Camino principal (React 19 + Vite + TS + HeroUI)
+├── __old/            # Legacy (API Express + UI estática) - en depreciación
+│   ├── backend/      # API Express (Node + Express + SQLite)
+│   │   ├── routes/  # Rutas: productos, ventas, usuarios, pagomovil, deudas
+│   │   ├── data/    # Datos en JSON (ej. deudas.json, según módulo)
+│   │   ├── database.sqlite
+│   │   └── server.js
+│   └── html/         # Páginas estáticas (pos/ventas/inventario/deudas/etc.)
+└── docs/             # Documentación del proyecto
 ```
 
 ## Instalación y ejecución
@@ -33,9 +30,9 @@ abasto-pos/
    cd abasto-pos
    ```
 
-2. **Instalar dependencias del backend:**
+2. **Instalar dependencias del backend (legacy):**
    ```bash
-   cd backend
+   cd __old/backend
    npm install
    ```
 
@@ -46,15 +43,17 @@ abasto-pos/
    npm run dev
    ```
    La app quedará en **http://localhost:5173** (o el puerto que indique Vite).
+   El frontend consume la API configurando `VITE_API_URL` (ver `frontend/.env.example`, por defecto `http://localhost:3000`).
 
-4. **Iniciar el servidor (backend):**
+4. **Iniciar el servidor (API Express legacy):**
    ```bash
+   cd __old/backend
    node server.js
    ```
    El servidor quedará disponible en **http://localhost:3000**.
 
 5. **Usar la interfaz:**  
-   Abre los archivos HTML desde la carpeta `html/` en el navegador (o sirve la carpeta con un servidor estático si lo necesitas).
+   Abre el frontend en `frontend/` (Vite). Si necesitas ejecutar el legacy, usa las páginas en `__old/html/`.
 
 ## API del backend
 
@@ -75,5 +74,5 @@ abasto-pos/
 ## Notas
 
 - Pensado para uso local o en red interna.
-- Base de datos principal: **SQLite** (`backend/database.sqlite`). Algunos datos (por ejemplo deudas) pueden usar archivos JSON en `backend/data/`.
+- Base de datos principal: **SQLite** (`__old/backend/database.sqlite`). Algunos datos (por ejemplo deudas) pueden usar archivos JSON en `__old/backend/data/` (según el módulo legacy).
 - Para dudas o mejoras, abre un *issue* en el repositorio o contacta al desarrollador.
