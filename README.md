@@ -76,3 +76,4 @@ abasto-pos/
 - Pensado para uso local o en red interna.
 - Base de datos principal: **SQLite** (`__old/backend/database.sqlite`). Algunos datos (por ejemplo deudas) pueden usar archivos JSON en `__old/backend/data/` (según el módulo legacy).
 - Para dudas o mejoras, abre un *issue* en el repositorio o contacta al desarrollador.
+# pruebas-abasto-pos
