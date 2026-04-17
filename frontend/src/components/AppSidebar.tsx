@@ -22,7 +22,6 @@ export function AppSidebar() {
     { key: 'inventory',      to: '/inventory',       labelKey: 'nav.inventory',     icon: <IconBoxes /> },
     { key: 'debts',          to: '/debts',           labelKey: 'nav.debts',         icon: <IconDebt /> },
     { key: 'costs',          to: '/costs',           labelKey: 'nav.costs',         icon: <IconCosts /> },
-    { key: 'reports',        to: '/reports',         labelKey: 'nav.reports',       icon: <IconChart /> },
     { key: 'settings',       to: '/settings',        labelKey: 'nav.settings',      icon: <IconSettings /> },
   ];
 

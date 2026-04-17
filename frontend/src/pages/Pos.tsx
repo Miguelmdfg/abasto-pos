@@ -40,11 +40,31 @@ const BANCOS_VE = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function moneyBs(value: number): string {
-  return `${value.toFixed(2)} Bs`;
-}
 function moneyUsd(value: number): string {
-  return `$${value.toFixed(2)} USD`;
+  return `$${value.toFixed(2)}`;
+}
+function moneyBs(value: number, rate: number): string {
+  return rate > 0 ? `${(value * rate).toFixed(2)} Bs` : `${value.toFixed(2)} Bs`;
+}
+
+function formatPrice(priceUsd: number, rate: number): JSX.Element {
+  const priceBs = rate > 0 ? priceUsd * rate : priceUsd;
+  return (
+    <>
+      <p className="font-bold text-slate-900 dark:text-white">${priceUsd.toFixed(2)}</p>
+      <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
+    </>
+  );
+}
+
+function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
+  const priceUsd = rate > 0 ? priceBs / rate : 0;
+  return (
+    <>
+      <p className="font-bold text-slate-900 dark:text-white">${priceUsd.toFixed(2)}</p>
+      <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
+    </>
+  );
 }
 
 // ─── Modal Pago Móvil / Mixto ─────────────────────────────────────────────────
@@ -580,14 +600,14 @@ export function Pos() {
     await loadProducts();
   }
 
-  const PAYMENT_METHODS: { key: PaymentMethod; label: string }[] = [
-    { key: 'efectivo_bs', label: 'Efectivo Bs' },
-    { key: 'efectivo_usd', label: 'Efectivo USD' },
-    { key: 'pagomovil', label: 'Pago Móvil' },
-    { key: 'tarjeta', label: 'Tarjeta' },
-    { key: 'punto_venta', label: 'Punto de Venta' },
-    { key: 'mixto', label: 'Pago Mixto' },
-    { key: 'fiado', label: '📋 Fiado' },
+  const PAYMENT_METHODS: { key: PaymentMethod; label: string; icon: string }[] = [
+    { key: 'efectivo_bs', label: 'Efectivo Bs', icon: '💵' },
+    { key: 'efectivo_usd', label: 'Efectivo USD', icon: '💰' },
+    { key: 'pagomovil', label: 'Pago Móvil', icon: '📱' },
+    { key: 'tarjeta', label: 'Tarjeta', icon: '💳' },
+    { key: 'punto_venta', label: 'Punto de Venta', icon: '🏪' },
+    { key: 'mixto', label: 'Pago Mixto', icon: '🔀' },
+    { key: 'fiado', label: 'Fiado', icon: '📋' },
   ];
 
   return (
@@ -705,8 +725,7 @@ export function Pos() {
                           </div>
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-bold">{moneyBs(product.price)}</p>
-                              <p className="text-xs text-slate-500">{moneyUsd(rate > 0 ? product.price / rate : 0)}</p>
+                              {formatPriceBsFirst(product.price, rate)}
                             </div>
                             <span className="text-xs text-slate-500">{t('pos.stock')}: {product.stock}</span>
                           </div>
@@ -761,14 +780,15 @@ export function Pos() {
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold">{item.name}</p>
                         <div className="text-right">
-                          <p className="text-sm font-semibold">{moneyBs(item.price * item.qty)}</p>
-                          <p className="text-xs text-slate-500">{moneyUsd(rate > 0 ? (item.price * item.qty) / rate : 0)}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">${((item.price * item.qty) / (rate || 1)).toFixed(2)}</p>
+                          <p className="text-xs text-slate-500">{moneyBs(item.price * item.qty, rate)}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <p className="text-xs text-slate-500">
-                          {moneyBs(item.price)} c/u · {moneyUsd(rate > 0 ? item.price / rate : 0)}
-                        </p>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">${(item.price / (rate || 1)).toFixed(2)} c/u</p>
+                          <p className="text-xs text-slate-500">{moneyBs(item.price, rate)}</p>
+                        </div>
                         <div className="flex items-center gap-2">
                           <Button size="sm" variant="ghost" onPress={() => updateQty(item.id, -1)}>-</Button>
                           <span className="w-6 text-center text-sm font-semibold">{item.qty}</span>
@@ -782,16 +802,21 @@ export function Pos() {
 
               <div className="space-y-2 border-t border-slate-200 pt-3 dark:border-slate-800">
                 <p className="text-sm font-semibold">{t('pos.payment.title')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {PAYMENT_METHODS.map(({ key, label }) => (
-                    <Button
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {PAYMENT_METHODS.map(({ key, label, icon }) => (
+                    <button
                       key={key}
-                      size="sm"
-                      variant={paymentMethod === key ? 'primary' : 'ghost'}
-                      onPress={() => setPaymentMethod(key)}
+                      type="button"
+                      onClick={() => setPaymentMethod(key)}
+                      className={`flex flex-col items-center justify-center gap-1 rounded-xl border py-4 text-sm font-bold transition-all ${
+                        paymentMethod === key
+                          ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                      }`}
                     >
-                      {label}
-                    </Button>
+                      <span className="text-xl">{icon}</span>
+                      <span>{label}</span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -799,8 +824,8 @@ export function Pos() {
               <div className="flex items-center justify-between border-t border-slate-200 pt-3 dark:border-slate-800">
                 <span className="text-lg font-extrabold">{t('pos.total')}</span>
                 <div className="text-right">
-                  <p className="text-lg font-extrabold">{moneyBs(total)}</p>
-                  <p className="text-sm font-semibold text-slate-500">{moneyUsd(totalUsd)}</p>
+                  <p className="text-lg font-extrabold text-slate-900 dark:text-white">${totalUsd.toFixed(2)}</p>
+                  <p className="text-sm font-semibold text-slate-500">{moneyBs(total, rate)}</p>
                 </div>
               </div>
 
@@ -811,6 +836,18 @@ export function Pos() {
                 onPress={handleCheckout}
               >
                 {isSubmitting ? t('pos.checkout.loading') : t('pos.checkout.action')}
+              </Button>
+
+              <Button
+                variant="secondary"
+                fullWidth
+                onPress={() => {
+                  if (cart.length === 0) { setError(t('pos.error.emptyCart')); return; }
+                  if (!confirm('¿Estás seguro de realizar el cierre de caja? Se registrará la venta actual.')) return;
+                  handleCheckout();
+                }}
+              >
+                📪 Cierre de caja
               </Button>
             </Card.Content>
           </Card>

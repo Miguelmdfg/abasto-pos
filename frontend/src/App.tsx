@@ -8,7 +8,6 @@ import { Inventory } from './pages/Inventory';
 import { Login } from './pages/Login';
 import { NotFound } from './pages/NotFound';
 import { Pos } from './pages/Pos';
-import { Reports } from './pages/Reports';
 import { SalesHistory } from './pages/SalesHistory';
 import { Settings } from './pages/Settings';
 
@@ -23,7 +22,6 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/debts" element={<Debts />} />
           <Route path="/costs" element={<Costs />} />
-          <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
         <Route path="/hello" element={<Home />} />

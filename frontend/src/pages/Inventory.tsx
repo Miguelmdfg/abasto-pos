@@ -1,6 +1,7 @@
 import { Button, Card, Dropdown, Spinner } from '@heroui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useI18n } from '../lib/i18n';
+import { useExchangeRate } from '../lib/exchange-rate';
 import { MOCK_PRODUCTS } from '../mocks/products';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -23,7 +24,15 @@ const emptyForm = { name: '', category: '', price: '0', costo: '0', stock: '0' }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function moneyBs(v: number) { return `${v.toFixed(2)} Bs`; }
+function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
+  const priceUsd = rate > 0 ? priceBs / rate : 0;
+  return (
+    <>
+      <p className="font-bold text-slate-900 dark:text-white">${priceUsd.toFixed(2)}</p>
+      <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
+    </>
+  );
+}
 
 function getStockLabel(stock: number): string {
   if (stock <= 0) return 'Sin stock';
@@ -60,6 +69,7 @@ function FieldInput({
 
 export function Inventory() {
   const { t } = useI18n();
+  const { rate } = useExchangeRate();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -555,12 +565,12 @@ export function Inventory() {
                           </button>
                         )}
 
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {moneyBs(product.price)}
-                        </span>
-                        <span className="text-slate-500">
-                          {product.costo > 0 ? moneyBs(product.costo) : '—'}
-                        </span>
+                        <div className="text-sm">
+                          {formatPriceBsFirst(product.price, rate)}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {product.costo > 0 ? formatPriceBsFirst(product.costo, rate) : <span>—</span>}
+                        </div>
                         <span className={`text-xs font-bold ${
                           margen === null ? 'text-slate-400' :
                           margen < 0 ? 'text-danger' :

@@ -2,6 +2,7 @@ import { Button, Card } from '@heroui/react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSalesHistory, type SaleRecord } from '../lib/sales-history';
+import { useExchangeRate } from '../lib/exchange-rate';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -16,6 +17,16 @@ const METODO_LABELS: Record<string, string> = {
   mixto:        'Mixto',
   fiado:        'Fiado',
 };
+
+function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
+  const priceUsd = rate > 0 ? priceBs / rate : 0;
+  return (
+    <>
+      <p className="font-bold text-slate-900 dark:text-white">${priceUsd.toFixed(2)}</p>
+      <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
+    </>
+  );
+}
 
 function moneyBs(value: number): string {
   return `${value.toFixed(2)} Bs`;
@@ -134,6 +145,7 @@ function ModalDetalle({ sale, onClose }: { sale: SaleRecord; onClose: () => void
 export function SalesHistory() {
   const navigate = useNavigate();
   const { sales } = useSalesHistory();
+  const { rate } = useExchangeRate();
 
   const [query, setQuery] = useState('');
   const [metodoFilter, setMetodoFilter] = useState('all');
