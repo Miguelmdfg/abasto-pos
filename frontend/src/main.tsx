@@ -9,6 +9,7 @@ import { SalesHistoryProvider } from './lib/sales-history';
 import { SettingsProvider } from './lib/settings-context';
 import { applyTheme, getInitialTheme } from './lib/theme';
 import { DebtsProvider } from './lib/debts-context';
+import { CashierShiftProvider } from './lib/cashier-shift';
 import { seedDemoDataIfEmpty } from './lib/demo-seed';
 
 applyTheme(getInitialTheme());
@@ -22,7 +23,9 @@ createRoot(document.getElementById('root')!).render(
           <ExchangeRateProvider>
             <SalesHistoryProvider>
               <DebtsProvider>
-                <App />
+                <CashierShiftProvider>
+                  <App />
+                </CashierShiftProvider>
               </DebtsProvider>
             </SalesHistoryProvider>
           </ExchangeRateProvider>

@@ -7,6 +7,7 @@ import { useI18n } from '../lib/i18n';
 import { useRateHistory } from '../lib/rate-history';
 import { MOCK_PRODUCTS } from '../mocks/products';
 import { useSalesHistory } from '../lib/sales-history';
+import { useCashierShift } from '../lib/cashier-shift';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -420,6 +421,7 @@ export function Pos() {
   const { rate, updatedAt, isStale } = useExchangeRate();
   const { pushRate } = useRateHistory();
   const { addSale } = useSalesHistory();
+  const { addShift } = useCashierShift();
   const { debts, addClient, addDebt } = useDebts();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -477,6 +479,7 @@ export function Pos() {
 
   const total = useMemo(() => cart.reduce((acc, item) => acc + item.price * item.qty, 0), [cart]);
   const totalUsd = rate > 0 ? total / rate : 0;
+  const totalBs = total;
 
   const totalCatalogPages = Math.max(1, Math.ceil(filteredProducts.length / CATALOG_PAGE_SIZE));
   const paginatedProducts = useMemo(() => {
@@ -524,7 +527,7 @@ export function Pos() {
     void submitSale({});
   }
 
-  async function submitSale(extra: Partial<PagoMovilData>) {
+  async function submitSale(extra: Partial<PagoMovilData>, fromCloseShift = false) {
     setIsSubmitting(true);
     setShowPagoMovilModal(false);
 
@@ -568,6 +571,30 @@ export function Pos() {
       // silencioso
     } finally {
       setIsSubmitting(false);
+    }
+
+    // Registrar cierre de caja si se realizó desde el botón de cierre
+    if (fromCloseShift) {
+      const salesByMethod = cart.reduce((acc, item) => {
+        const methodKey = paymentMethod || 'efectivo_bs';
+        acc[methodKey] = (acc[methodKey] || 0) + (item.price * item.qty);
+        return acc;
+      }, {} as Record<string, number>);
+
+      addShift({
+        cajero: CAJERO_ACTUAL,
+        totalVentas: total,
+        totalVentasUsd: totalUsd,
+        cantidadVentas: 1,
+        efectivoBs: paymentMethod === 'efectivo_bs' ? total : 0,
+        efectivoUsd: paymentMethod === 'efectivo_usd' ? totalUsd : 0,
+        pagoMovil: paymentMethod === 'pagomovil' ? total : 0,
+        tarjeta: paymentMethod === 'tarjeta' ? total : 0,
+        puntoVenta: paymentMethod === 'punto_venta' ? total : 0,
+        fiado: paymentMethod === 'fiado' ? total : 0,
+        mixto: paymentMethod === 'mixto' ? total : 0,
+        tasaCierre: rate,
+      });
     }
 
     setLastSaleId(record.id);
@@ -780,14 +807,14 @@ export function Pos() {
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold">{item.name}</p>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">${((item.price * item.qty) / (rate || 1)).toFixed(2)}</p>
-                          <p className="text-xs text-slate-500">{moneyBs(item.price * item.qty, rate)}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">${((item.price * item.qty) / rate).toFixed(2)}</p>
+                          <p className="text-xs text-slate-500">{(item.price * item.qty).toFixed(2)} Bs</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">${(item.price / (rate || 1)).toFixed(2)} c/u</p>
-                          <p className="text-xs text-slate-500">{moneyBs(item.price, rate)}</p>
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">${(item.price / rate).toFixed(2)} c/u</p>
+                          <p className="text-xs text-slate-500">{item.price.toFixed(2)} Bs</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button size="sm" variant="ghost" onPress={() => updateQty(item.id, -1)}>-</Button>
@@ -808,14 +835,14 @@ export function Pos() {
                       key={key}
                       type="button"
                       onClick={() => setPaymentMethod(key)}
-                      className={`flex flex-col items-center justify-center gap-1 rounded-xl border py-4 text-sm font-bold transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2 rounded-xl border py-4 transition-all ${
                         paymentMethod === key
                           ? 'border-primary bg-primary/10 text-primary shadow-sm'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                       }`}
                     >
-                      <span className="text-xl">{icon}</span>
-                      <span>{label}</span>
+                      <span className="text-2xl">{icon}</span>
+                      <span className="text-xs font-bold text-center">{label}</span>
                     </button>
                   ))}
                 </div>
@@ -825,7 +852,7 @@ export function Pos() {
                 <span className="text-lg font-extrabold">{t('pos.total')}</span>
                 <div className="text-right">
                   <p className="text-lg font-extrabold text-slate-900 dark:text-white">${totalUsd.toFixed(2)}</p>
-                  <p className="text-sm font-semibold text-slate-500">{moneyBs(total, rate)}</p>
+                  <p className="text-sm font-semibold text-slate-500">{totalBs.toFixed(2)} Bs</p>
                 </div>
               </div>
 
