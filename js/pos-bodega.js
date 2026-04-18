@@ -2,6 +2,7 @@ const API_URL = "http://localhost:3000";
 
 let products = [];
 let cart = [];
+let sesionActiva = null;
 
 // ELEMENTOS
 const posProducts = document.getElementById("posProducts");
@@ -28,6 +29,46 @@ const errorOverlay = document.getElementById('errorOverlay');
 const errorModal = document.getElementById('errorModal');
 const errorMessage = document.getElementById('errorMessage');
 const errorClose = document.getElementById('errorClose');
+
+// MODAL APERTURA
+const aperturaOverlay = document.getElementById('aperturaOverlay');
+const aperturaModal = document.getElementById('aperturaModal');
+const aperturaCajero = document.getElementById('aperturaCajero');
+const aperturaFondoBs = document.getElementById('aperturaFondoBs');
+const aperturaFondoUsd = document.getElementById('aperturaFondoUsd');
+const aperturaCancelar = document.getElementById('aperturaCancelar');
+const aperturaConfirmar = document.getElementById('aperturaConfirmar');
+
+// MODAL CIERRE
+const cierreOverlay = document.getElementById('cierreOverlay');
+const cierreModal = document.getElementById('cierreModal');
+const cierreCancelar = document.getElementById('cierreCancelar');
+const cierreConfirmar = document.getElementById('cierreConfirmar');
+const btnCerrarCaja = document.getElementById('btnCerrarCaja');
+const cajeroInfo = document.getElementById('cajeroInfo');
+
+// Elementos del modal de cierre
+const cierreFondoBs = document.getElementById('cierreFondoBs');
+const cierreFondoUsd = document.getElementById('cierreFondoUsd');
+const cierreTeoricoBs = document.getElementById('cierreTeoricoBs');
+const cierreTeoricoUsd = document.getElementById('cierreTeoricoUsd');
+const cierreEfectivoBs = document.getElementById('cierreEfectivoBs');
+const cierreEfectivoUsd = document.getElementById('cierreEfectivoUsd');
+const cierrePagoMovil = document.getElementById('cierrePagoMovil');
+const cierrePuntoVenta = document.getElementById('cierrePuntoVenta');
+const cierreFiado = document.getElementById('cierreFiado');
+const cierreConteoBs = document.getElementById('cierreConteoBs');
+const cierreConteoUsd = document.getElementById('cierreConteoUsd');
+const cierreDiferenciaBs = document.getElementById('cierreDiferenciaBs');
+const cierreDiferenciaUsd = document.getElementById('cierreDiferenciaUsd');
+const boxDiferenciaBs = document.getElementById('boxDiferenciaBs');
+const boxDiferenciaUsd = document.getElementById('boxDiferenciaUsd');
+const cierreTotalVentas = document.getElementById('cierreTotalVentas');
+const cierreNumTransacciones = document.getElementById('cierreNumTransacciones');
+const cierreHoraApertura = document.getElementById('cierreHoraApertura');
+const cierreHoraCierre = document.getElementById('cierreHoraCierre');
+
+let resumenCajaActual = null;
 
 function showErrorModal(msg) {
   errorMessage.textContent = msg || 'Ocurrió un error';
@@ -274,6 +315,230 @@ async function completeSale(extra = {}) {
 }
 
 // ===============================
-// 9. INICIAR
+// 9. GESTIÓN DE CAJA
+// ===============================
+
+async function verificarSesionActiva() {
+  try {
+    const res = await fetch(`${API_URL}/caja/sesion-activa`);
+    sesionActiva = await res.json();
+    
+    if (sesionActiva) {
+      // Hay sesión activa - mostrar info del cajero y habilitar cierre
+      cajeroInfo.textContent = `Cajero: ${sesionActiva.cajero}`;
+      btnCerrarCaja.style.display = 'block';
+      btnCerrarCaja.disabled = false;
+      ticketCheckout.disabled = false;
+    } else {
+      // No hay sesión - mostrar modal de apertura
+      cajeroInfo.textContent = '';
+      btnCerrarCaja.style.display = 'none';
+      ticketCheckout.disabled = true;
+      abrirModalApertura();
+    }
+  } catch (err) {
+    console.error('Error verificando sesión:', err);
+  }
+}
+
+function abrirModalApertura() {
+  aperturaCajero.value = '';
+  aperturaFondoBs.value = '0';
+  aperturaFondoUsd.value = '0';
+  aperturaOverlay.classList.add('visible');
+  aperturaModal.classList.add('open');
+}
+
+function cerrarModalApertura() {
+  aperturaOverlay.classList.remove('visible');
+  aperturaModal.classList.remove('open');
+}
+
+aperturaCancelar.addEventListener('click', cerrarModalApertura);
+aperturaOverlay.addEventListener('click', cerrarModalApertura);
+
+aperturaConfirmar.addEventListener('click', async () => {
+  const cajero = aperturaCajero.value.trim();
+  const fondoBs = parseFloat(aperturaFondoBs.value) || 0;
+  const fondoUsd = parseFloat(aperturaFondoUsd.value) || 0;
+  
+  if (!cajero) {
+    alert('Ingrese el nombre del cajero');
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${API_URL}/caja/abrir`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cajero, fondo_inicial_bs: fondoBs, fondo_inicial_usd: fondoUsd })
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || 'Error abriendo caja');
+      return;
+    }
+    
+    sesionActiva = await res.json();
+    cerrarModalApertura();
+    verificarSesionActiva();
+    alert('Caja abierta exitosamente');
+  } catch (err) {
+    console.error('Error abriendo caja:', err);
+    alert('Error abriendo caja');
+  }
+});
+
+function abrirModalCierre() {
+  if (!sesionActiva) return;
+  
+  // Cargar resumen de caja
+  cargarResumenCierre();
+}
+
+async function cargarResumenCierre() {
+  try {
+    const res = await fetch(`${API_URL}/caja/resumen/${sesionActiva.id}`);
+    resumenCajaActual = await res.json();
+    
+    // A. Fondo Inicial
+    cierreFondoBs.textContent = `${formatNumber(resumenCajaActual.sesion.fondo_inicial_bs || 0)} Bs`;
+    cierreFondoUsd.textContent = `${formatNumber(resumenCajaActual.sesion.fondo_inicial_usd || 0)} USD`;
+    
+    // B. Efectivo Teórico
+    cierreTeoricoBs.textContent = `${formatNumber(resumenCajaActual.efectivo_teorico_bs || 0)} Bs`;
+    cierreTeoricoUsd.textContent = `${formatNumber(resumenCajaActual.efectivo_teorico_usd || 0)} USD`;
+    
+    // C. Desglose por Método de Pago
+    cierreEfectivoBs.textContent = `${formatNumber(resumenCajaActual.desglose.efectivo_bs || 0)} Bs`;
+    cierreEfectivoUsd.textContent = `${formatNumber(resumenCajaActual.desglose.efectivo_usd || 0)} USD`;
+    cierrePagoMovil.textContent = `${formatNumber(resumenCajaActual.desglose.pago_movil || 0)} Bs`;
+    cierrePuntoVenta.textContent = `${formatNumber(resumenCajaActual.desglose.punto_venta || 0)} Bs`;
+    cierreFiado.textContent = `${formatNumber(resumenCajaActual.desglose.fiado || 0)} Bs`;
+    
+    // F. Resumen del Turno
+    cierreTotalVentas.textContent = `${formatNumber(resumenCajaActual.total_ventas || 0)} Bs`;
+    cierreNumTransacciones.textContent = resumenCajaActual.num_transacciones || 0;
+    cierreHoraApertura.textContent = formatHora(resumenCajaActual.sesion.fecha_apertura);
+    cierreHoraCierre.textContent = formatHora(new Date().toISOString());
+    
+    // Resetear conteo real y diferencia
+    cierreConteoBs.value = '0';
+    cierreConteoUsd.value = '0';
+    actualizarDiferencia();
+    
+    cierreOverlay.classList.add('visible');
+    cierreModal.classList.add('open');
+  } catch (err) {
+    console.error('Error cargando resumen:', err);
+    alert('Error cargando datos de cierre');
+  }
+}
+
+function cerrarModalCierre() {
+  cierreOverlay.classList.remove('visible');
+  cierreModal.classList.remove('open');
+}
+
+cierreCancelar.addEventListener('click', cerrarModalCierre);
+cierreOverlay.addEventListener('click', cerrarModalCierre);
+
+cierreConteoBs.addEventListener('input', actualizarDiferencia);
+cierreConteoUsd.addEventListener('input', actualizarDiferencia);
+
+function actualizarDiferencia() {
+  if (!resumenCajaActual) return;
+  
+  const conteoBs = parseFloat(cierreConteoBs.value) || 0;
+  const conteoUsd = parseFloat(cierreConteoUsd.value) || 0;
+  
+  const diffBs = conteoBs - (resumenCajaActual.efectivo_teorico_bs || 0);
+  const diffUsd = conteoUsd - (resumenCajaActual.efectivo_teorico_usd || 0);
+  
+  cierreDiferenciaBs.textContent = `${diffBs >= 0 ? '+' : ''}${formatNumber(diffBs)} Bs`;
+  cierreDiferenciaUsd.textContent = `${diffUsd >= 0 ? '+' : ''}${formatNumber(diffUsd)} USD`;
+  
+  // Actualizar colores
+  actualizarColorDiferencia(boxDiferenciaBs, cierreDiferenciaBs, diffBs);
+  actualizarColorDiferencia(boxDiferenciaUsd, cierreDiferenciaUsd, diffUsd);
+}
+
+function actualizarColorDiferencia(box, label, diferencia) {
+  box.style.borderColor = '';
+  box.style.background = '';
+  
+  if (diferencia > 0) {
+    // Sobrante - verde
+    box.style.borderColor = 'rgba(34,197,94,0.5)';
+    box.style.background = 'rgba(34,197,94,0.1)';
+    label.style.color = '#22c55e';
+  } else if (diferencia < 0) {
+    // Faltante - rojo
+    box.style.borderColor = 'rgba(239,68,68,0.5)';
+    box.style.background = 'rgba(239,68,68,0.1)';
+    label.style.color = '#ef4444';
+  } else {
+    // Cuadrada - verde
+    box.style.borderColor = 'rgba(34,197,94,0.5)';
+    box.style.background = 'rgba(34,197,94,0.1)';
+    label.style.color = '#22c55e';
+  }
+}
+
+cierreConfirmar.addEventListener('click', async () => {
+  if (!sesionActiva) return;
+  
+  const conteoBs = parseFloat(cierreConteoBs.value) || 0;
+  const conteoUsd = parseFloat(cierreConteoUsd.value) || 0;
+  
+  if (!confirm('¿Confirmar cierre de caja? Esta acción no se puede deshacer.')) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${API_URL}/caja/cerrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sesion_id: sesionActiva.id,
+        conteo_real_bs: conteoBs,
+        conteo_real_usd: conteoUsd
+      })
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || 'Error cerrando caja');
+      return;
+    }
+    
+    const cierre = await res.json();
+    cerrarModalCierre();
+    sesionActiva = null;
+    verificarSesionActiva();
+    
+    alert(`Caja cerrada exitosamente.\n\nDiferencia Bs: ${formatNumber(cierre.diferencia_bs || 0)}\nDiferencia USD: ${formatNumber(cierre.diferencia_usd || 0)}`);
+  } catch (err) {
+    console.error('Error cerrando caja:', err);
+    alert('Error cerrando caja');
+  }
+});
+
+btnCerrarCaja.addEventListener('click', abrirModalCierre);
+
+function formatNumber(num) {
+  return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatHora(isoString) {
+  if (!isoString) return '--:--';
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ===============================
+// 10. INICIAR
 // ===============================
 loadProducts();
+verificarSesionActiva();

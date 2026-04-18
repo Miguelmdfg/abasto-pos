@@ -12,7 +12,10 @@ db.serialize(() => {
     name TEXT,
     category TEXT,
     price REAL,
-    stock INTEGER
+    stock INTEGER,
+    cost_usd REAL DEFAULT 0,
+    units_per_bundle INTEGER DEFAULT 1,
+    cost_per_bundle_usd REAL DEFAULT 0
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS ventas (
@@ -43,6 +46,39 @@ db.serialize(() => {
   db.run('ALTER TABLE pagomovil ADD COLUMN sale_id INTEGER', (err) => {
     // ignore error: column may already exist
   });
+
+  // Tabla para sesiones de caja
+  db.run(`CREATE TABLE IF NOT EXISTS caja_sesiones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cajero TEXT,
+    fecha_apertura TEXT,
+    fondo_inicial_bs REAL DEFAULT 0,
+    fondo_inicial_usd REAL DEFAULT 0,
+    fecha_cierre TEXT,
+    estado TEXT DEFAULT 'abierta'
+  )`);
+
+  // Tabla para cierres de caja
+  db.run(`CREATE TABLE IF NOT EXISTS cierre_caja (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sesion_id INTEGER,
+    cajero TEXT,
+    fecha_apertura TEXT,
+    fecha_cierre TEXT,
+    fondo_inicial_bs REAL DEFAULT 0,
+    fondo_inicial_usd REAL DEFAULT 0,
+    ventas_total_bs REAL DEFAULT 0,
+    ventas_total_usd REAL DEFAULT 0,
+    efectivo_teorico_bs REAL DEFAULT 0,
+    efectivo_teorico_usd REAL DEFAULT 0,
+    conteo_real_bs REAL DEFAULT 0,
+    conteo_real_usd REAL DEFAULT 0,
+    diferencia_bs REAL DEFAULT 0,
+    diferencia_usd REAL DEFAULT 0,
+    total_ventas INTEGER DEFAULT 0,
+    num_transacciones INTEGER DEFAULT 0,
+    FOREIGN KEY (sesion_id) REFERENCES caja_sesiones(id)
+  )`);
 });
 
 // Promise-wrapper helpers

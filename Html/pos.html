@@ -20,7 +20,13 @@
       <a href="ventas.html">Ventas</a>
       <a href="pagomovil.html">Pago móvil</a>
       <a href="deudas.html">Deudas</a>
+      <a href="cierres-caja.html">Cierres de Caja</a>
     </nav>
+
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <span id="cajeroInfo" style="color:#94a3b8;font-size:0.85rem;"></span>
+      <button id="btnCerrarCaja" class="pay-btn" style="padding:0.4rem 0.8rem;font-size:0.8rem;">Cerrar Caja</button>
+    </div>
   </header>
 
   <section class="pos-container">
@@ -80,6 +86,149 @@
     <div id="errorMessage" style="margin-top:0.5rem;color:#fca5a5"></div>
     <div class="modal-actions">
       <button id="errorClose" class="modal-btn primary">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL APERTURA DE CAJA -->
+  <div class="modal-overlay" id="aperturaOverlay"></div>
+  <div class="modal" id="aperturaModal">
+    <h3>Apertura de Caja</h3>
+    <p style="color:#94a3b8;margin-bottom:1rem;">Ingrese el fondo inicial para comenzar el turno</p>
+    
+    <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;color:#e2e8f0;">Nombre del Cajero:</label>
+    <input type="text" id="aperturaCajero" class="modal-input" placeholder="Nombre del cajero" />
+    
+    <label style="display:block;margin:1rem 0 0.5rem;font-size:0.9rem;color:#e2e8f0;">Fondo Inicial en Bs:</label>
+    <input type="number" id="aperturaFondoBs" class="modal-input" placeholder="0.00" step="0.01" value="0" />
+    
+    <label style="display:block;margin:1rem 0 0.5rem;font-size:0.9rem;color:#e2e8f0;">Fondo Inicial en USD:</label>
+    <input type="number" id="aperturaFondoUsd" class="modal-input" placeholder="0.00" step="0.01" value="0" />
+    
+    <div class="modal-actions">
+      <button id="aperturaCancelar" class="modal-btn secondary">Cancelar</button>
+      <button id="aperturaConfirmar" class="modal-btn primary">Abrir Caja</button>
+    </div>
+  </div>
+
+  <!-- MODAL CIERRE DE CAJA -->
+  <div class="modal-overlay" id="cierreOverlay"></div>
+  <div class="modal" id="cierreModal" style="max-width:700px;">
+    <h3>Cierre de Caja</h3>
+    
+    <!-- A. FONDO INICIAL -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="color:#facc15;margin-bottom:0.5rem;font-size:1rem;">A. Fondo Inicial</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div style="background:rgba(255,255,255,0.05);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Fondo Bs</div>
+          <div id="cierreFondoBs" style="font-size:1.2rem;font-weight:600;">0.00 Bs</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Fondo USD</div>
+          <div id="cierreFondoUsd" style="font-size:1.2rem;font-weight:600;">0.00 USD</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. EFECTIVO TEÓRICO -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="color:#facc15;margin-bottom:0.5rem;font-size:1rem;">B. Efectivo Teórico</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div style="background:rgba(34,197,94,0.1);padding:0.8rem;border-radius:8px;border:1px solid rgba(34,197,94,0.3);">
+          <div style="font-size:0.8rem;color:#94a3b8;">Total Bs (Fondo + Ventas)</div>
+          <div id="cierreTeoricoBs" style="font-size:1.2rem;font-weight:600;color:#22c55e;">0.00 Bs</div>
+        </div>
+        <div style="background:rgba(34,197,94,0.1);padding:0.8rem;border-radius:8px;border:1px solid rgba(34,197,94,0.3);">
+          <div style="font-size:0.8rem;color:#94a3b8;">Total USD (Fondo + Ventas)</div>
+          <div id="cierreTeoricoUsd" style="font-size:1.2rem;font-weight:600;color:#22c55e;">0.00 USD</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. DESGLOSE POR MÉTODO DE PAGO -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="color:#facc15;margin-bottom:0.5rem;font-size:1rem;">C. Desglose por Método de Pago</h4>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.8rem;">
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Efectivo Bs</div>
+          <div id="cierreEfectivoBs" style="font-size:1.1rem;font-weight:600;">0.00 Bs</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Efectivo USD</div>
+          <div id="cierreEfectivoUsd" style="font-size:1.1rem;font-weight:600;">0.00 USD</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Pago Móvil</div>
+          <div id="cierrePagoMovil" style="font-size:1.1rem;font-weight:600;">0.00 Bs</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Punto de Venta</div>
+          <div id="cierrePuntoVenta" style="font-size:1.1rem;font-weight:600;">0.00 Bs</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Fiado</div>
+          <div id="cierreFiado" style="font-size:1.1rem;font-weight:600;">0.00 Bs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. CONTEO FÍSICO REAL -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="color:#facc15;margin-bottom:0.5rem;font-size:1rem;">D. Conteo Físico Real</h4>
+      <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:0.8rem;">Ingrese el dinero físico contado en caja</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <label style="font-size:0.85rem;color:#e2e8f0;">Conteo Real Bs:</label>
+          <input type="number" id="cierreConteoBs" class="modal-input" placeholder="0.00" step="0.01" value="0" />
+        </div>
+        <div>
+          <label style="font-size:0.85rem;color:#e2e8f0;">Conteo Real USD:</label>
+          <input type="number" id="cierreConteoUsd" class="modal-input" placeholder="0.00" step="0.01" value="0" />
+        </div>
+      </div>
+    </div>
+
+    <!-- E. DIFERENCIA / DESCUADRE -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="color:#facc15;margin-bottom:0.5rem;font-size:1rem;">E. Diferencia / Descuadre</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div id="boxDiferenciaBs" style="padding:0.8rem;border-radius:8px;border:1px solid;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Diferencia Bs</div>
+          <div id="cierreDiferenciaBs" style="font-size:1.2rem;font-weight:600;">0.00 Bs</div>
+        </div>
+        <div id="boxDiferenciaUsd" style="padding:0.8rem;border-radius:8px;border:1px solid;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Diferencia USD</div>
+          <div id="cierreDiferenciaUsd" style="font-size:1.2rem;font-weight:600;">0.00 USD</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- F. RESUMEN DEL TURNO -->
+    <div style="margin-bottom:1.5rem;">
+      <h4 style="color:#facc15;margin-bottom:0.5rem;font-size:1rem;">F. Resumen del Turno</h4>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.8rem;">
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Total Ventas</div>
+          <div id="cierreTotalVentas" style="font-size:1.1rem;font-weight:600;">0.00 Bs</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Transacciones</div>
+          <div id="cierreNumTransacciones" style="font-size:1.1rem;font-weight:600;">0</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Hora Apertura</div>
+          <div id="cierreHoraApertura" style="font-size:1.1rem;font-weight:600;">--:--</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.8rem;border-radius:8px;">
+          <div style="font-size:0.8rem;color:#94a3b8;">Hora Cierre</div>
+          <div id="cierreHoraCierre" style="font-size:1.1rem;font-weight:600;">--:--</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button id="cierreCancelar" class="modal-btn secondary">Cancelar</button>
+      <button id="cierreConfirmar" class="modal-btn primary" style="background:#ef4444;">Confirmar Cierre</button>
     </div>
   </div>
 

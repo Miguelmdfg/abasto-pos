@@ -31,10 +31,10 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, price, stock } = req.body;
+    const { name, category, price, stock, cost_usd, units_per_bundle, cost_per_bundle_usd } = req.body;
     await db.run(
-      'UPDATE productos SET name = ?, category = ?, price = ?, stock = ? WHERE id = ?',
-      [name, category, price, stock, id]
+      'UPDATE productos SET name = ?, category = ?, price = ?, stock = ?, cost_usd = ?, units_per_bundle = ?, cost_per_bundle_usd = ? WHERE id = ?',
+      [name, category, price, stock, cost_usd, units_per_bundle, cost_per_bundle_usd, id]
     );
     const product = await db.get('SELECT * FROM productos WHERE id = ?', [id]);
     res.json(product);

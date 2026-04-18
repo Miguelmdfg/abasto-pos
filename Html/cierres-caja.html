@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cierres de Caja — BodegaFlow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/inventory.css" />
+  
+  <style>
+    .caja-container {
+      padding: 2rem;
+    }
+
+    .caja-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .caja-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .caja-card {
+      background: #1e293b;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .caja-card h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .caja-card p {
+      margin: 0.5rem 0 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #facc15;
+    }
+
+    .caja-filters {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+    }
+
+    .caja-input {
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: #0f172a;
+      color: #e2e8f0;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .caja-btn {
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .caja-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .caja-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .caja-table th,
+    .caja-table td {
+      padding: 0.9rem;
+      border-bottom: 1px solid rgba(148,163,184,0.1);
+      font-size: 0.85rem;
+    }
+
+    .caja-table th {
+      background: rgba(255,255,255,0.05);
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .diferencia-positiva {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .diferencia-negativa {
+      color: #ef4444;
+      font-weight: 600;
+    }
+
+    .diferencia-cero {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .estado-abierta {
+      background: #22c55e;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .estado-cerrada {
+      background: #64748b;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .btn-ver {
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      border: none;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .btn-ver:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-logo">BodegaFlow</div>
+
+    <nav class="nav-links">
+      <a href="pos.html">POS</a>
+      <a href="inventory.html">Inventario</a>
+      <a href="ventas.html">Ventas</a>
+      <a href="pagomovil.html">Pago móvil</a>
+      <a href="deudas.html">Deudas</a>
+      <a href="cierres-caja.html" class="active">Cierres de Caja</a>
+    </nav>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <section class="caja-container">
+
+    <div class="caja-header">
+      <h1>Historial de Cierres de Caja</h1>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="caja-filters">
+      <input type="date" id="filterFechaInicio" class="caja-input" placeholder="Fecha inicio" />
+      <input type="date" id="filterFechaFin" class="caja-input" placeholder="Fecha fin" />
+      <input type="text" id="filterCajero" class="caja-input" placeholder="Buscar por cajero..." />
+      <button class="caja-btn" onclick="aplicarFiltros()">Filtrar</button>
+      <button class="caja-btn" onclick="limpiarFiltros()" style="background: #64748b;">Limpiar</button>
+    </div>
+
+    <!-- TABLA -->
+    <table class="caja-table">
+      <thead>
+        <tr>
+          <th>Fecha Cierre</th>
+          <th>Cajero</th>
+          <th>Fondo Inicial (Bs/USD)</th>
+          <th>Ventas (Bs/USD)</th>
+          <th>Efectivo Teórico (Bs/USD)</th>
+          <th>Conteo Real (Bs/USD)</th>
+          <th>Diferencia (Bs/USD)</th>
+          <th>Transacciones</th>
+        </tr>
+      </thead>
+
+      <tbody id="cierresBody"></tbody>
+    </table>
+
+  </section>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+
+    const cierresBody = document.getElementById("cierresBody");
+    const filterFechaInicio = document.getElementById("filterFechaInicio");
+    const filterFechaFin = document.getElementById("filterFechaFin");
+    const filterCajero = document.getElementById("filterCajero");
+
+    let cierres = [];
+
+    function formatNumber(num) {
+      return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatDate(isoString) {
+      if (!isoString) return '-';
+      const date = new Date(isoString);
+      return date.toLocaleString('es-VE');
+    }
+
+    function getDiferenciaClass(diferencia) {
+      if (diferencia > 0) return 'diferencia-positiva';
+      if (diferencia < 0) return 'diferencia-negativa';
+      return 'diferencia-cero';
+    }
+
+    function renderCierres(data) {
+      cierresBody.innerHTML = '';
+
+      if (data.length === 0) {
+        cierresBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;">No hay cierres registrados</td></tr>';
+        return;
+      }
+
+      data.forEach(c => {
+        const row = document.createElement('tr');
+        
+        const diffBsClass = getDiferenciaClass(c.diferencia_bs || 0);
+        const diffUsdClass = getDiferenciaClass(c.diferencia_usd || 0);
+
+        row.innerHTML = `
+          <td>${formatDate(c.fecha_cierre)}</td>
+          <td>${c.cajero || '-'}</td>
+          <td>Bs ${formatNumber(c.fondo_inicial_bs || 0)} / USD ${formatNumber(c.fondo_inicial_usd || 0)}</td>
+          <td>Bs ${formatNumber(c.ventas_total_bs || 0)} / USD ${formatNumber(c.ventas_total_usd || 0)}</td>
+          <td>Bs ${formatNumber(c.efectivo_teorico_bs || 0)} / USD ${formatNumber(c.efectivo_teorico_usd || 0)}</td>
+          <td>Bs ${formatNumber(c.conteo_real_bs || 0)} / USD ${formatNumber(c.conteo_real_usd || 0)}</td>
+          <td class="${diffBsClass}">Bs ${formatNumber(c.diferencia_bs || 0)}</td>
+          <td>${c.num_transacciones || 0}</td>
+        `;
+        cierresBody.appendChild(row);
+      });
+    }
+
+    async function cargarCierres() {
+      try {
+        const params = new URLSearchParams();
+        if (filterFechaInicio.value) params.append('fecha_inicio', filterFechaInicio.value);
+        if (filterFechaFin.value) params.append('fecha_fin', filterFechaFin.value);
+        if (filterCajero.value) params.append('cajero', filterCajero.value);
+
+        const res = await fetch(`${API_URL}/caja/historial?${params.toString()}`);
+        cierres = await res.json();
+        renderCierres(cierres);
+      } catch (e) {
+        console.error('Error cargando cierres:', e);
+        cierresBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#ef4444;">Error cargando datos</td></tr>';
+      }
+    }
+
+    function aplicarFiltros() {
+      cargarCierres();
+    }
+
+    function limpiarFiltros() {
+      filterFechaInicio.value = '';
+      filterFechaFin.value = '';
+      filterCajero.value = '';
+      cargarCierres();
+    }
+
+    // Cargar al iniciar
+    cargarCierres();
+  </script>
+
+</body>
+</html>
