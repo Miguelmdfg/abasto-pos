@@ -15,7 +15,7 @@ export type SaleRecord = {
   id: string;              // VTA-YYYYMMDD-XXXX
   fecha: string;           // ISO string
   cajero: string;
-  metodo: string;          // 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'tarjeta' | 'punto_venta' | 'mixto' | 'fiado'
+  metodo: string;          // 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'punto_venta' | 'mixto' | 'fiado'
   total: number;           // total en Bs
   productos: SaleProduct[];
   referencia?: string;     // últimos 6 dígitos pago móvil

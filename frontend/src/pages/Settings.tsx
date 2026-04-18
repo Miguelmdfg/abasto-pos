@@ -15,7 +15,6 @@ const METODOS_LABEL: Record<PaymentMethodKey, string> = {
   efectivo_bs:  'Efectivo Bs',
   efectivo_usd: 'Efectivo USD',
   pagomovil:    'Pago Móvil',
-  tarjeta:      'Tarjeta',
   punto_venta:  'Punto de Venta',
   mixto:        'Pago Mixto',
   fiado:        'Fiado (Deuda)',

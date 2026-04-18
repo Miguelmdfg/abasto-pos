@@ -20,7 +20,7 @@ type Product = {
 };
 
 type CartItem = Product & { qty: number };
-type PaymentMethod = 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'tarjeta' | 'punto_venta' | 'mixto' | 'fiado';
+type PaymentMethod = 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'punto_venta' | 'mixto' | 'fiado';
 
 type PagoMovilData = {
   referencia: string;
@@ -64,6 +64,16 @@ function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
     <>
       <p className="font-bold text-slate-900 dark:text-white">${priceUsd.toFixed(2)}</p>
       <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
+    </>
+  );
+}
+
+function formatCartTotal(totalBs: number, rate: number): JSX.Element {
+  const totalUsd = rate > 0 ? totalBs / rate : 0;
+  return (
+    <>
+      <p className="text-lg font-extrabold text-slate-900 dark:text-white">${totalUsd.toFixed(2)}</p>
+      <p className="text-sm font-semibold text-slate-500">{totalBs.toFixed(2)} Bs</p>
     </>
   );
 }
@@ -413,6 +423,221 @@ function BannerVentaExitosa({ saleId, onClose }: { saleId: string; onClose: () =
   );
 }
 
+// ─── Modal Cierre de Caja ─────────────────────────────────────────────────────
+
+type CierreData = {
+  cajero: string;
+  totalVentasBs: number;
+  totalVentasUsd: number;
+  cantidadVentas: number;
+  efectivoBs: number;
+  efectivoUsd: number;
+  pagoMovil: number;
+  puntoVenta: number;
+  fiado: number;
+  mixto: number;
+};
+
+function ModalCierreCaja({
+  total,
+  totalUsd,
+  rate,
+  paymentMethod,
+  cart,
+  cajero,
+  onConfirm,
+  onCancel,
+}: {
+  total: number;
+  totalUsd: number;
+  rate: number;
+  paymentMethod: PaymentMethod | null;
+  cart: CartItem[];
+  cajero: string;
+  onConfirm: (data: CierreData) => void;
+  onCancel: () => void;
+}) {
+  const [efectivoBs, setEfectivoBs] = useState('');
+  const [efectivoUsd, setEfectivoUsd] = useState('');
+  const [pagoMovil, setPagoMovil] = useState('');
+  const [puntoVenta, setPuntoVenta] = useState('');
+  const [fiado, setFiado] = useState('');
+  const [mixto, setMixto] = useState('');
+  const [fondoInicialBs, setFondoInicialBs] = useState('0');
+  const [fondoInicialUsd, setFondoInicialUsd] = useState('0');
+  const [conteoRealBs, setConteoRealBs] = useState('');
+  const [conteoRealUsd, setConteoRealUsd] = useState('');
+
+  const ventaActualBs = cart.length > 0 && paymentMethod === 'efectivo_bs' ? total : 0;
+  const ventaActualUsd = cart.length > 0 && paymentMethod === 'efectivo_usd' ? totalUsd : 0;
+  const ventaActualFiado = cart.length > 0 && paymentMethod === 'fiado' ? total : 0;
+  const ventaActualPagoMovil = cart.length > 0 && (paymentMethod === 'pagomovil' || paymentMethod === 'mixto') ? total : 0;
+  const ventaActualPuntoVenta = cart.length > 0 && paymentMethod === 'punto_venta' ? total : 0;
+
+  const totalTeoricoBs = Number(fondoInicialBs) + ventaActualBs;
+  const totalTeoricoUsd = Number(fondoInicialUsd) + ventaActualUsd;
+
+  const diferenciaBs = conteoRealBs ? Number(conteoRealBs) - totalTeoricoBs : 0;
+  const diferenciaUsd = conteoRealUsd ? Number(conteoRealUsd) - totalTeoricoUsd : 0;
+
+  const estadoCierreBs = Math.abs(diferenciaBs) <= 5 ? '✅ Cuadrado' : diferenciaBs > 0 ? '⚠️ Sobrante' : '🚫 Faltante';
+  const estadoCierreUsd = Math.abs(diferenciaUsd) <= 1 ? '✅ Cuadrado' : diferenciaUsd > 0 ? '⚠️ Sobrante' : '🚫 Faltante';
+
+  function handleConfirm() {
+    const data: CierreData = {
+      cajero,
+      totalVentasBs: total,
+      totalVentasUsd: totalUsd,
+      cantidadVentas: cart.length > 0 ? 1 : 0,
+      efectivoBs: Number(efectivoBs) || 0,
+      efectivoUsd: Number(efectivoUsd) || 0,
+      pagoMovil: Number(pagoMovil) || 0,
+      puntoVenta: Number(puntoVenta) || 0,
+      fiado: Number(fiado) || 0,
+      mixto: Number(mixto) || 0,
+    };
+    onConfirm(data);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="w-full max-w-4xl rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 my-8">
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-slate-200 p-5 dark:border-slate-800">
+          <div>
+            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">📪 Cierre de Caja</h3>
+            <p className="text-sm text-slate-500">Cajero: {cajero} | Fecha: {new Date().toLocaleDateString('es-VE')}</p>
+          </div>
+          <button onClick={onCancel} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800">✕</button>
+        </div>
+
+        <div className="p-5 space-y-6 max-h-[70vh] overflow-y-auto">
+          {/* Fondo Inicial */}
+          <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+            <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Fondo Inicial</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Fondo Bs</label>
+                <input type="number" value={fondoInicialBs} onChange={(e) => setFondoInicialBs(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Fondo USD</label>
+                <input type="number" value={fondoInicialUsd} onChange={(e) => setFondoInicialUsd(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* Efectivo Teórico */}
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 dark:border-primary/20">
+            <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-primary">Efectivo Teórico</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-slate-500">Total Bs</p>
+                <p className="text-lg font-extrabold text-slate-900 dark:text-white">{totalTeoricoBs.toFixed(2)} Bs</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Total USD</p>
+                <p className="text-lg font-extrabold text-slate-900 dark:text-white">${totalTeoricoUsd.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Desglose por Método */}
+          <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+            <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Desglose por Método de Pago</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">💵 Efectivo Bs</label>
+                <input type="number" value={efectivoBs} onChange={(e) => setEfectivoBs(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">💰 Efectivo USD</label>
+                <input type="number" value={efectivoUsd} onChange={(e) => setEfectivoUsd(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">📱 Pago Móvil</label>
+                <input type="number" value={pagoMovil} onChange={(e) => setPagoMovil(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">🏪 Punto de Venta</label>
+                <input type="number" value={puntoVenta} onChange={(e) => setPuntoVenta(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">📋 Fiado</label>
+                <input type="number" value={fiado} onChange={(e) => setFiado(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* Conteo Físico */}
+          <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+            <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">🔢 Conteo Físico Real</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Conteo Real Bs *</label>
+                <input type="number" value={conteoRealBs} onChange={(e) => setConteoRealBs(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Conteo Real USD *</label>
+                <input type="number" value={conteoRealUsd} onChange={(e) => setConteoRealUsd(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+            </div>
+          </div>
+
+          {/* Diferencias y Estado */}
+          {(conteoRealBs || conteoRealUsd) && (
+            <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+              <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">📊 Comparación</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className={`rounded-lg p-3 ${diferenciaBs === 0 ? 'bg-success/10' : diferenciaBs > 0 ? 'bg-warning/10' : 'bg-danger/10'}`}>
+                  <p className="text-xs text-slate-500">Diferencia Bs</p>
+                  <p className={`text-lg font-extrabold ${diferenciaBs === 0 ? 'text-success' : diferenciaBs > 0 ? 'text-warning' : 'text-danger'}`}>
+                    {diferenciaBs > 0 ? '+' : ''}{diferenciaBs.toFixed(2)} Bs
+                  </p>
+                  <p className="text-xs font-semibold">{estadoCierreBs}</p>
+                </div>
+                <div className={`rounded-lg p-3 ${diferenciaUsd === 0 ? 'bg-success/10' : diferenciaUsd > 0 ? 'bg-warning/10' : 'bg-danger/10'}`}>
+                  <p className="text-xs text-slate-500">Diferencia USD</p>
+                  <p className={`text-lg font-extrabold ${diferenciaUsd === 0 ? 'text-success' : diferenciaUsd > 0 ? 'text-warning' : 'text-danger'}`}>
+                    {diferenciaUsd > 0 ? '+' : ''}${diferenciaUsd.toFixed(2)}
+                  </p>
+                  <p className="text-xs font-semibold">{estadoCierreUsd}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Venta Actual Pendiente */}
+          {cart.length > 0 && (
+            <div className="rounded-xl border border-warning/30 bg-warning/5 p-4 dark:border-warning/20">
+              <p className="text-sm font-bold text-warning">⚠️ Venta pendiente de {METODO_LABELS[paymentMethod || 'efectivo_bs']}</p>
+              <p className="text-xs text-slate-500">Monto: ${totalUsd.toFixed(2)} / {total.toFixed(2)} Bs</p>
+              <p className="text-xs text-slate-500 mt-1">Esta venta se registrará antes del cierre.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer con botones */}
+        <div className="border-t border-slate-200 p-5 dark:border-slate-800">
+          <div className="flex gap-3">
+            <button onClick={onCancel} className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Cancelar</button>
+            <button onClick={handleConfirm} className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90">Confirmar Cierre</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const METODO_LABELS: Record<string, string> = {
+  efectivo_bs: 'Efectivo Bs',
+  efectivo_usd: 'Efectivo USD',
+  pagomovil: 'Pago Móvil',
+  punto_venta: 'Punto de Venta',
+  mixto: 'Mixto',
+  fiado: 'Fiado',
+};
+
 // ─── Main POS ─────────────────────────────────────────────────────────────────
 
 export function Pos() {
@@ -434,6 +659,7 @@ export function Pos() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [showPagoMovilModal, setShowPagoMovilModal] = useState(false);
   const [showFiadoModal, setShowFiadoModal] = useState(false);
+  const [showCierreModal, setShowCierreModal] = useState(false);
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
   const [catalogPage, setCatalogPage] = useState(1);
   const CATALOG_PAGE_SIZE = 12;
@@ -589,7 +815,6 @@ export function Pos() {
         efectivoBs: paymentMethod === 'efectivo_bs' ? total : 0,
         efectivoUsd: paymentMethod === 'efectivo_usd' ? totalUsd : 0,
         pagoMovil: paymentMethod === 'pagomovil' ? total : 0,
-        tarjeta: paymentMethod === 'tarjeta' ? total : 0,
         puntoVenta: paymentMethod === 'punto_venta' ? total : 0,
         fiado: paymentMethod === 'fiado' ? total : 0,
         mixto: paymentMethod === 'mixto' ? total : 0,
@@ -631,7 +856,6 @@ export function Pos() {
     { key: 'efectivo_bs', label: 'Efectivo Bs', icon: '💵' },
     { key: 'efectivo_usd', label: 'Efectivo USD', icon: '💰' },
     { key: 'pagomovil', label: 'Pago Móvil', icon: '📱' },
-    { key: 'tarjeta', label: 'Tarjeta', icon: '💳' },
     { key: 'punto_venta', label: 'Punto de Venta', icon: '🏪' },
     { key: 'mixto', label: 'Pago Mixto', icon: '🔀' },
     { key: 'fiado', label: 'Fiado', icon: '📋' },
@@ -807,14 +1031,13 @@ export function Pos() {
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold">{item.name}</p>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">${((item.price * item.qty) / rate).toFixed(2)}</p>
-                          <p className="text-xs text-slate-500">{(item.price * item.qty).toFixed(2)} Bs</p>
+                          {formatCartTotal(item.price * item.qty, rate)}
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">${(item.price / rate).toFixed(2)} c/u</p>
-                          <p className="text-xs text-slate-500">{item.price.toFixed(2)} Bs</p>
+                          {formatCartTotal(item.price, rate)}
+                          <p className="text-xs text-slate-500">c/u</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button size="sm" variant="ghost" onPress={() => updateQty(item.id, -1)}>-</Button>
@@ -850,10 +1073,7 @@ export function Pos() {
 
               <div className="flex items-center justify-between border-t border-slate-200 pt-3 dark:border-slate-800">
                 <span className="text-lg font-extrabold">{t('pos.total')}</span>
-                <div className="text-right">
-                  <p className="text-lg font-extrabold text-slate-900 dark:text-white">${totalUsd.toFixed(2)}</p>
-                  <p className="text-sm font-semibold text-slate-500">{totalBs.toFixed(2)} Bs</p>
-                </div>
+                {formatCartTotal(totalBs, rate)}
               </div>
 
               <Button
@@ -868,11 +1088,7 @@ export function Pos() {
               <Button
                 variant="secondary"
                 fullWidth
-                onPress={() => {
-                  if (cart.length === 0) { setError(t('pos.error.emptyCart')); return; }
-                  if (!confirm('¿Estás seguro de realizar el cierre de caja? Se registrará la venta actual.')) return;
-                  handleCheckout();
-                }}
+                onPress={() => setShowCierreModal(true)}
               >
                 📪 Cierre de caja
               </Button>
@@ -881,6 +1097,46 @@ export function Pos() {
 
         </div>
       </div>
+
+      {/* Modal de Cierre de Caja */}
+      {showCierreModal && (
+        <ModalCierreCaja
+          total={total}
+          totalUsd={totalUsd}
+          rate={rate}
+          paymentMethod={paymentMethod}
+          cart={cart}
+          cajero={CAJERO_ACTUAL}
+          onConfirm={(data) => {
+            setShowCierreModal(false);
+            // Procesar la venta actual si hay carrito
+            if (cart.length > 0 && paymentMethod) {
+              if (paymentMethod === 'pagomovil' || paymentMethod === 'mixto') {
+                // Manejar pago móvil/mixto desde el cierre
+              } else if (paymentMethod === 'fiado') {
+                // Manejar fiado desde el cierre
+              } else {
+                void submitSale({}, true);
+              }
+            }
+            // Registrar el cierre con los datos proporcionados
+            addShift({
+              cajero: data.cajero,
+              totalVentas: data.totalVentasBs,
+              totalVentasUsd: data.totalVentasUsd,
+              cantidadVentas: data.cantidadVentas,
+              efectivoBs: data.efectivoBs,
+              efectivoUsd: data.efectivoUsd,
+              pagoMovil: data.pagoMovil,
+              puntoVenta: data.puntoVenta,
+              fiado: data.fiado,
+              mixto: data.mixto,
+              tasaCierre: rate,
+            });
+          }}
+          onCancel={() => setShowCierreModal(false)}
+        />
+      )}
     </>
   );
 }

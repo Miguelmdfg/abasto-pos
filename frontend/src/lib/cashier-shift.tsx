@@ -14,7 +14,6 @@ export type CashierShift = {
   efectivoBs: number;
   efectivoUsd: number;
   pagoMovil: number;
-  tarjeta: number;
   puntoVenta: number;
   fiado: number;
   mixto: number;

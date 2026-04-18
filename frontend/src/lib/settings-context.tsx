@@ -4,7 +4,7 @@ import { readLocalStorage, writeLocalStorage } from './storage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type PaymentMethodKey = 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'tarjeta' | 'punto_venta' | 'mixto' | 'fiado';
+export type PaymentMethodKey = 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'punto_venta' | 'mixto' | 'fiado';
 
 export type AppSettings = {
   // Tasa e IVA
@@ -41,7 +41,6 @@ const DEFAULT_SETTINGS: AppSettings = {
     efectivo_bs:  true,
     efectivo_usd: true,
     pagomovil:    true,
-    tarjeta:      true,
     punto_venta:  true,
     mixto:        true,
     fiado:        true,
