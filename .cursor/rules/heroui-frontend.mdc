@@ -1,0 +1,31 @@
+---
+description: Usar componentes HeroUI para toda la UI del frontend React
+globs: frontend/**/*.tsx
+alwaysApply: true
+---
+
+# HeroUI v3 en el frontend
+
+En el frontend de esta aplicación (`frontend/`), **toda la interfaz de usuario debe construirse con componentes de HeroUI v3** (`@heroui/react`). Los estilos se cargan con `@heroui/styles` en el CSS (ver `src/index.css`). Compatible con Tailwind CSS v4.
+
+## Reglas
+
+- **Formularios**: Usar `Input`, `Button`, `Checkbox`, `Select`, `Switch`, etc. de `@heroui/react`. No usar `<input>`, `<button>` o elementos HTML nativos para controles de formulario salvo que HeroUI no ofrezca equivalente.
+- **Layout y contenedores**: Usar `Card`, `Modal`, `Divider`, `Spacer` cuando corresponda para estructurar la pantalla.
+- **Feedback**: Usar `Spinner`, `Alert`, componentes de toast/notificación de HeroUI para estados de carga y mensajes.
+- **Navegación y acciones**: Usar `Button`, `Link`, `Dropdown` de HeroUI.
+- **Imports**: Importar desde `@heroui/react` (ej. `import { Button, Input, Card } from '@heroui/react'`).
+- HeroUI v3 no requiere `HeroUIProvider` en web; no añadirlo.
+- **Estructura de frontend**:
+  - **Páginas** en `frontend/src/pages/`
+  - **Componentes compartidos** en `frontend/src/components/`
+  - **Mocks** (si aplica) en `frontend/src/mocks/`
+  - **i18n/tema/almacenamiento** en `frontend/src/lib/`
+- **Estilos**:
+  - Preferir Tailwind para layout y espaciado.
+  - Si se requiere CSS adicional, centralizarlo en `frontend/src/index.css` (evitar proliferación de CSS por página salvo necesidad real).
+
+## Cuándo no aplicar
+
+- Archivos de configuración, tipos TypeScript puros sin JSX, o utilidades que no renderizan UI.
+- Si se necesita un elemento HTML semántico muy específico sin equivalente en HeroUI, documentar el motivo.

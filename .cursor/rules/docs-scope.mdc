@@ -1,0 +1,17 @@
+---
+description: Usar el documento correcto según scope (Actual vs Legacy)
+globs: docs/**/*.md
+alwaysApply: true
+---
+
+# Scope documental (Actual vs Legacy)
+
+Cuando el usuario pida cambiar documentación:
+
+1. Determinar el alcance del cambio:
+   - `frontend/` (camino principal) => actualizar `docs/FUNCIONALIDADES-ACTUAL.md` y/o documentos asociados del frontend.
+   - `__old/` (legacy/depreciado) => actualizar `docs/FUNCIONALIDADES-LEGACY.md` y/o la referencia del contrato API legacy.
+2. Evitar duplicar contenido:
+   - Si se requiere un índice/resumen, actualizar `docs/FUNCIONALIDADES.md` como “índice” enlazando a los documentos de detalle.
+3. Verificar endpoints “reales” antes de documentar API:
+   - Usar `docs/API-CONTRATO-ACTUAL.md` como guía para `frontend/` y consultar `frontend/src/` cuando sea necesario.

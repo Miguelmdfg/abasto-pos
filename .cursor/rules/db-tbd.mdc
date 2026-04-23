@@ -1,0 +1,15 @@
+---
+description: Mantener decisiones de base de datos como TBD hasta análisis futuro
+globs: docs/**/*.md
+alwaysApply: true
+---
+
+# BD como TBD
+
+Cuando el usuario solicite documentación o decisiones relacionadas con la base de datos:
+
+- No afirmar una tecnología específica (por ejemplo PostgreSQL/SQLite) como decisión final si el análisis aún no se hizo.
+- Si se menciona una BD concreta, enmarcarla como:
+  - “legacy” (solo referencia)
+  - o “TBD (pendiente de análisis)”
+- Evitar agregar tablas, migraciones, índices o detalles de modelo como si fueran definitivos.

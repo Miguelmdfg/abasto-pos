@@ -1,0 +1,32 @@
+[
+  {
+    "id": "mls9prpvmnefr1",
+    "name": "Angel",
+    "phone": "04123350633",
+    "products": [
+      {
+        "name": "gatorade",
+        "amount": 500
+      },
+      {
+        "name": "atun",
+        "amount": 345
+      },
+      {
+        "name": "torta",
+        "amount": 20000
+      }
+    ]
+  },
+  {
+    "id": "mlbavbyzilmdai",
+    "name": "miguel",
+    "phone": "04123350635",
+    "products": [
+      {
+        "name": "cigarros",
+        "amount": 500
+      }
+    ]
+  }
+]
