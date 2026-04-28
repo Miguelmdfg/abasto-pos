@@ -4,6 +4,18 @@
 
 ---
 
+> **⚠ Notas de alineación con el código actual (rama `final-code`)**
+>
+> Este documento es la **especificación funcional objetivo**. La implementación vigente difiere en varios puntos:
+>
+> - **Roles:** este documento usa "Vendedor"/"Dueño". El código usa los identificadores `cajero` y `dueno` (ver `frontend/src/lib/auth.tsx`). "Vendedor" y "cajero" se refieren al mismo rol.
+> - **Acceso al POS:** el documento dice que el dueño NO accede al POS. En la implementación actual, el rol `dueno` sí tiene acceso a `/pos` (decisión deliberada para permitir reemplazo del cajero).
+> - **Backend/BD:** la sección 5 describe arquitectura objetivo. Hoy no hay backend; todo persiste en `localStorage`.
+> - **Terminología "Notas de Crédito":** lo que aquí y en código se llama "fiado", "venta fiada" o "Módulo de Deudas" se redenomina al **dominio "Notas de Crédito"** (ver [`03-decisiones-modelo-datos.md`](03-decisiones-modelo-datos.md), MD-014). Mientras se completa el renombre se mantienen ambos términos en este documento.
+> - **Estado real por módulo:** ver [`01-estado-implementacion.md`](01-estado-implementacion.md).
+
+---
+
 ## 1. VISIÓN GENERAL DEL SISTEMA
 
 El sistema es una plataforma integral de gestión comercial orientada a negocios minoristas (bodegas, abastos, tiendas de primera necesidad) que requieren control de inventario, facturación individual con cálculo de IVA, gestión de deudas, análisis financiero y administración operativa.
@@ -14,7 +26,7 @@ Su diseño está basado en separación clara de roles, control centralizado de i
 - Registro estructurado de ventas
 - Gestión de pagos múltiples (efectivo BsF, efectivo USD, pago móvil, punto de venta, mixto)
 - Cálculo de impuestos (IVA)
-- Control de deudas y ventas fiadas
+- Control de notas de crédito (ventas a crédito a clientes)
 - Apertura y cierre diario de caja
 - Análisis de desempeño comercial
 - Generación de alertas inteligentes con acción directa
@@ -136,7 +148,7 @@ Registrar ventas de forma estructurada, rápida y automatizada.
   - Pago Móvil
   - Punto de Venta
   - Mixto
-  - Fiado _(nuevo)_
+  - Nota de crédito _(nuevo — anteriormente "Fiado")_
 - Botón de Cierre de Caja _(solo visible si hay caja abierta)_
 
 ---
@@ -164,7 +176,7 @@ El vendedor selecciona uno de los siguientes métodos:
 - **Pago Móvil** → Ver flujo 3.3.A
 - **Punto de Venta** → Ingresar últimos 4 dígitos de referencia → Confirmar monto.
 - **Mixto** → Ver flujo 3.3.B
-- **Fiado** → Ver flujo 3.3.C
+- **Nota de crédito** → Ver flujo 3.3.C
 
 **Paso 4 — Confirmación de venta**
 
@@ -220,25 +232,27 @@ El vendedor selecciona uno de los siguientes métodos:
 
 ---
 
-#### FLUJO 3.3.C — VENTA FIADA (DEUDA DESDE POS)
+#### FLUJO 3.3.C — VENTA CON NOTA DE CRÉDITO
 
 **NUEVO — Flujo crítico**
 
-1. El vendedor selecciona "Fiado".
+> Anteriormente "Venta Fiada". El método de pago se nombra **"Nota de crédito"** en la UI; en código aún figura como `'fiado'` (renombre pendiente).
+
+1. El vendedor selecciona "Nota de crédito".
 2. Sistema muestra modal con buscador de clientes registrados.
 3. Si el cliente existe:
-   - Se muestra nombre, deuda actual y límite de crédito configurado.
-   - Si la nueva deuda supera el límite: mostrar advertencia. El dueño debe haberlo autorizado previamente o el sistema bloquea.
-   - Vendedor confirma la venta fiada.
+   - Se muestra nombre, saldo pendiente actual (suma de notas vigentes) y límite de crédito configurado.
+   - Si la nueva nota supera el límite: mostrar advertencia. El dueño debe haberlo autorizado previamente o el sistema bloquea.
+   - Vendedor confirma la emisión de la nota.
 4. Si el cliente no existe:
    - Opción de registrar cliente nuevo con: nombre, teléfono, cédula (opcional).
-   - Continuar con la venta fiada.
+   - Continuar con la emisión de la nota.
 5. Sistema registra:
-   - Venta con estado "Fiado"
-   - Productos y montos asociados al cliente
-   - Fecha de la deuda
-6. La deuda queda automáticamente reflejada en el Módulo de Deudas del dueño.
-7. El vendedor ve confirmación: _"Venta fiada registrada a nombre de [Cliente]."_
+   - Venta con método de pago "Nota de crédito"
+   - Nota de crédito asociada al cliente, con sus productos y monto
+   - Fecha de emisión
+6. La nota queda reflejada en el Módulo de Notas de Crédito del dueño.
+7. El vendedor ve confirmación: _"Nota de crédito registrada a nombre de [Cliente]."_
 
 ---
 
@@ -325,30 +339,32 @@ El dueño posee acceso administrativo integral. No tiene acceso al POS.
 
 ---
 
-### 4.2 Módulo de Deudas
+### 4.2 Módulo de Notas de Crédito
+
+> Anteriormente "Módulo de Deudas". Ver MD-014 en [`03-decisiones-modelo-datos.md`](03-decisiones-modelo-datos.md).
 
 #### Objetivo
 
-Control estructurado de ventas fiadas con seguimiento de clientes.
+Control estructurado de ventas con nota de crédito (a pagar a futuro), con seguimiento de clientes.
 
 #### Funcionalidades
 
 - Registro y gestión de clientes con límite de crédito individual
-- Visualización de deuda total por cliente
-- Historial de compras fiadas por cliente
-- Registro de abonos parciales o totales
-- Cálculo automático de saldo pendiente
+- Visualización del saldo pendiente por cliente (suma de notas vigentes)
+- Historial de compras con nota de crédito por cliente
+- Registro de abonos parciales o totales contra una nota de crédito
+- Cálculo automático del saldo de cada nota
 - Alertas automáticas por:
-  - Límite de crédito superado
-  - Morosidad mayor a 30 días
-- Integración automática con cierre de caja (abonos recibidos)
-- Exportación de cartera de deudas en PDF y Excel
+  - Límite de crédito superado al emitir una nueva nota
+  - Morosidad (nota vigente más allá del umbral configurado)
+- Integración automática con cierre de caja (abonos recibidos en el turno)
+- Exportación de cartera de notas de crédito en PDF y Excel
 
-#### Estados de deuda
+#### Estados de la nota de crédito
 
-- Al día
-- Por vencer (entre 20-30 días)
-- Vencida (más de 30 días)
+- Vigente (al día)
+- Por vencer (acercándose al umbral de morosidad)
+- Vencida (superó el umbral)
 - Saldada
 
 ---
@@ -471,7 +487,7 @@ Control de rentabilidad por producto.
 - Ganancias (brutas y netas)
 - Inventario (stock actual, movimientos)
 - Productos destacados (más vendidos, menos vendidos)
-- Deudas (cartera completa, por cliente, vencidas)
+- Notas de crédito (cartera completa, por cliente, vencidas)
 - Cierres de caja (por período, por vendedor)
 - Proveedores e historial de compras
 
@@ -525,16 +541,18 @@ Control de rentabilidad por producto.
 
 ---
 
+> **Nota sobre el estado actual:** lo que aparece a continuación es la **arquitectura objetivo**. La implementación vigente (rama `final-code`) solo tiene frontend, sin backend ni base de datos — la persistencia es en `localStorage`. Ver [`01-estado-implementacion.md`](01-estado-implementacion.md) para el detalle.
+
 ### 5.1 Frontend
 
-**Tecnología:** React + Vite + TypeScript
+**Tecnología actual:** React 19 + Vite 6 + TypeScript + HeroUI 3 + Tailwind 4 + react-router-dom 7.
 
 **Capacidades clave:**
 
 - Componentes reutilizables y modulares
-- Navegación y rutas protegidas por rol
-- Manejo eficiente de estado global (Zustand o Redux)
-- Visualización avanzada de analíticas (Recharts o Chart.js)
+- Navegación y rutas protegidas por rol (implementado vía `canAccessPath` en `lib/auth.tsx`)
+- Estado global mediante Context API de React (no se usa Zustand/Redux)
+- Visualización de analíticas (pendiente: librería de gráficas no integrada aún)
 - Experiencia fluida en POS (optimizada para uso continuo)
 - Soporte responsive para tablets (uso en mostrador)
 
@@ -542,12 +560,14 @@ Control de rentabilidad por producto.
 
 ### 5.2 Backend
 
-**Tecnología:** Node.js + Express (stack actual de la API)
+**Tecnología objetivo:** Node.js + Express (servicio RESTful).
 
-**Características:**
+**Estado actual:** **no hay backend activo.** Existe una API Express legacy bajo `__old/backend/` que no es consumida por el frontend actual. Todas las operaciones se resuelven en el cliente contra `localStorage`.
+
+**Características objetivo:**
 
 - API RESTful estructurada por módulos
-- Autenticación y control de sesiones (según implementación)
+- Autenticación y control de sesiones
 - Control de permisos por rol en cada endpoint
 - Validación centralizada de datos
 - Arquitectura preparada para crecimiento futuro
@@ -556,7 +576,9 @@ Control de rentabilidad por producto.
 
 ### 5.3 Base de Datos
 
-**Tecnología:** TBD (pendiente de decisión)
+**Tecnología objetivo:** por definir (PostgreSQL candidata).
+
+**Estado actual:** persistencia en `localStorage` del navegador (claves prefijadas con `abasto.*`). Los datos demo iniciales viven en `frontend/src/mocks/`.
 
 **Entidades a modelar (alto nivel):**
 
@@ -592,10 +614,10 @@ Esta sección es una referencia rápida de los flujos que deben estar 100% desar
 | 3   | Venta con pago simple              | POS - Vendedor        | 🔴 Alta   |
 | 4   | Venta con pago mixto               | POS - Vendedor        | 🔴 Alta   |
 | 5   | Venta con pago móvil               | POS - Vendedor        | 🔴 Alta   |
-| 6   | Venta fiada desde POS              | POS - Vendedor        | 🔴 Alta   |
+| 6   | Venta con nota de crédito desde POS| POS - Vendedor        | 🔴 Alta   |
 | 7   | Cierre de caja                     | POS - Vendedor        | 🔴 Alta   |
 | 8   | Vista de cierre por dueño          | Cierres - Dueño       | 🔴 Alta   |
-| 9   | Registro de abono de deuda         | Deudas - Dueño        | 🟠 Media  |
+| 9   | Registro de abono a nota de crédito| Notas de Crédito - Dueño | 🟠 Media  |
 | 10  | Creación y edición de productos    | Inventario - Dueño    | 🟠 Media  |
 | 11  | Carga masiva de inventario (Excel) | Inventario - Dueño    | 🟠 Media  |
 | 12  | Registro de compra a proveedor     | Proveedores - Dueño   | 🟠 Media  |

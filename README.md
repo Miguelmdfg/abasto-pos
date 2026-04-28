@@ -1,50 +1,82 @@
-# Bodega-Flow
+# Abasto POS (Bodega-Flow)
 
-## Descripción General
-Bodega-Flow es un sistema de gestión para bodegas que permite administrar ventas, inventario, deudas, usuarios y pagos móviles. El sistema está dividido en un backend (servidor) y un frontend (interfaz web), facilitando la gestión diaria de una bodega o pequeño comercio.
+Sistema de punto de venta y gestión para bodegas/comercios pequeños. Permite ventas (POS), control de inventario, deudas (fiado), cierres de caja, costos y multimoneda Bs/USD con tasa del día.
 
-## Tecnologías Utilizadas
-- **Backend:** Node.js con Express.js
-- **Base de datos:** Archivos JSON locales (no requiere instalación de bases de datos externas)
-- **Frontend:** HTML, CSS y JavaScript puro
-- **Control de versiones:** Git
+> Estado: rama `final-code` — versión definitiva reescrita desde cero. Solo frontend operativo; sin backend ni base de datos activos (la persistencia es en `localStorage`).
 
-## Estructura del Proyecto
-- `backend/`: Lógica del servidor, rutas, manejo de datos y archivos JSON
-  - `routes/`: Rutas para ventas, productos, usuarios, deudas y pagos móviles
-  - `data/`: Archivos JSON con la información persistente
-- `Html/`: Archivos HTML para cada sección del sistema
-- `css/`: Hojas de estilo para la interfaz
-- `js/`: Scripts de frontend para interacción con la UI
-- `public/`: Recursos públicos como imágenes
+## Stack
 
-## Instalación y Ejecución
-1. **Clonar el repositorio:**
-   ```bash
-   git clone <URL-del-repositorio>
-   cd Bodega-Flow/backend
-   ```
-2. **Instalar dependencias:**
-   ```bash
-   npm install
-   ```
-3. **Iniciar el servidor:**
-   ```bash
-   node server.js
-   ```
-   El servidor se ejecutará por defecto en `http://localhost:3000`.
+- **Frontend:** React 19 + TypeScript + Vite 6
+- **UI:** [HeroUI](https://heroui.com) 3.0.0-beta.8 + Tailwind CSS 4
+- **Routing:** react-router-dom 7
+- **Estado:** Context API de React (sin Redux/Zustand)
+- **Persistencia:** `localStorage` del navegador
+- **Backend:** ninguno activo (existe un Express legacy en `__old/backend/` solo como referencia histórica)
 
-4. **Abrir la interfaz:**
-   Abre los archivos HTML desde la carpeta `Html/` en tu navegador o configura un servidor estático para servirlos.
+## Estructura
 
-## Uso
-- Accede a las diferentes páginas HTML según la funcionalidad que necesites (ventas, inventario, deudas, etc.)
-- El backend expone rutas para manejar los datos, que son consumidas por los scripts JS del frontend
+```
+abasto-pos/
+├── README.md                  # este archivo
+├── docs/                      # documentación del proyecto (ver docs/README abajo)
+├── frontend/                  # aplicación React (única app activa)
+│   └── src/
+│       ├── pages/             # páginas/rutas (Pos, Inventory, Debts, …)
+│       ├── components/        # AppLayout, AppHeader, AppSidebar, icons
+│       ├── lib/               # contextos React + utilidades (auth, exchange-rate, …)
+│       └── mocks/             # datos demo (productos, ventas, dashboard)
+└── __old/                     # código legacy (HTML/CSS/JS + Express). NO usar.
+```
 
-## Notas
-- El sistema está pensado para uso local o en una red interna.
-- No requiere base de datos externa, pero los datos se almacenan en archivos JSON en el backend.
-- Puedes personalizar los estilos y la lógica según las necesidades de tu bodega.
+## Requisitos
 
-## Contacto
-Para dudas o mejoras, contacta al desarrollador original o crea un issue en el repositorio de GitHub.
+- Node.js 18+ y npm
+
+## Ejecución local
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Vite levanta el dev server (por defecto en `http://localhost:5173`).
+
+### Otros scripts
+
+```bash
+npm run build      # compila TypeScript y genera build de producción
+npm run preview    # sirve el build de producción
+npm run lint       # ESLint
+```
+
+## Usuarios de prueba
+
+El login usa usuarios hardcodeados (no hay backend de auth real). Los roles disponibles son `dueno` y `cajero`. Ver [frontend/src/pages/Login.tsx](frontend/src/pages/Login.tsx) para credenciales actuales.
+
+### Permisos por rol
+
+| Rol      | Rutas accesibles                                                                                       |
+|----------|--------------------------------------------------------------------------------------------------------|
+| `dueno`  | `/`, `/pos`, `/sales-history`, `/cash-closures`, `/inventory`, `/debts`, `/costs`, `/settings`         |
+| `cajero` | `/pos`, `/inventory`, `/debts`                                                                         |
+
+Definidos en [frontend/src/lib/auth.tsx](frontend/src/lib/auth.tsx).
+
+## Documentación
+
+| Archivo                                                                          | Contenido                                                          |
+|----------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| [docs/00-arquitectura.md](docs/00-arquitectura.md)                               | Estructura del frontend, contextos, flujo de datos, persistencia   |
+| [docs/01-estado-implementacion.md](docs/01-estado-implementacion.md)             | Tabla de módulos con % real implementado y qué falta               |
+| [docs/02-relevamiento-codigo.md](docs/02-relevamiento-codigo.md)                 | Tipos, persistencia, relaciones y cálculos extraídos del código    |
+| [docs/03-decisiones-modelo-datos.md](docs/03-decisiones-modelo-datos.md)         | ADRs del modelo de datos: decididas, propuestas, pendientes, v2    |
+| [docs/04-scope-cliente.md](docs/04-scope-cliente.md)                             | Scope para discusión con el cliente — decisiones, propuestas, dudas|
+| [docs/requerimientos.md](docs/requerimientos.md)                                 | Especificación funcional del producto                              |
+| [docs/STITCH-BRIEF-VISUALES-MODULOS.md](docs/STITCH-BRIEF-VISUALES-MODULOS.md)   | Brief visual de módulos (diseño)                                   |
+
+## Limitaciones conocidas
+
+- **Sin backend:** todo persiste en `localStorage`; los datos se pierden al limpiar el navegador.
+- **Datos demo:** productos y ventas iniciales vienen de `frontend/src/mocks/`.
+- **Módulos no implementados:** Usuarios/Permisos, Proveedores, Alertas inteligentes, carga Excel de inventario, exportación PDF/Excel de reportes. Detalle en [docs/01-estado-implementacion.md](docs/01-estado-implementacion.md).
