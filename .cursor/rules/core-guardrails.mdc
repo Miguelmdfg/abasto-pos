@@ -1,0 +1,28 @@
+---
+description: Non-negotiable repo-wide guardrails - TypeScript only, package boundaries, no secrets in code
+globs: []
+alwaysApply: true
+---
+
+# Core Guardrails
+
+Non-negotiable standards that apply to all code in the repository.
+
+## TypeScript only
+
+All code must be written in TypeScript. No exceptions.
+
+## Import conventions
+
+Use relative paths within `frontend/src/`. Group imports logically (external libs, then local modules).
+
+- External: `import { Button } from '@heroui/react'`
+- Local: relative paths (`./`, `../`) within `frontend/src/`
+
+## Secrets and configuration
+
+Do not commit secrets, API keys, or credentials. Use environment variables or secure secret management. Never hardcode sensitive values in source.
+
+## Rule and skill usage
+
+Prefer scoped rules (globs) and Agent Skills for domain-specific guidance. Do not add new always-apply rules unless they are truly repo-wide non-negotiables.

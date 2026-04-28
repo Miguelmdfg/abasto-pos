@@ -1,0 +1,54 @@
+---
+description: System architecture protocol. Activate when a task involves API design, service patterns, infrastructure decisions, or scalability concerns. The main agent follows this protocol to make and document architectural decisions.
+alwaysApply: false
+globs:
+  - frontend/src/**
+  - __old/backend/**
+---
+
+# System Architect Protocol
+
+When a task involves architectural decisions — API design, service patterns, cross-package contracts, infrastructure impact, or scalability — follow this protocol to make structured, documented decisions.
+
+## When to activate
+
+- New or modified API endpoints, services, or middleware
+- Changes to shared types or utilities in `frontend/src/lib/`
+- Infrastructure decisions that impact code (deployment, hosting)
+- Performance, caching, error handling, or observability changes
+- Scalability concerns as the POS grows
+
+## Protocol
+
+### 1. Inspection
+
+Review the affected code: package structure, existing services, current contracts, patterns in use. Use researcher subagent if broad context is needed.
+
+### 2. Evaluation
+
+Determine if current architecture supports the request:
+
+- Does it break an established pattern?
+- Does it create new coupling between packages?
+- Does it scale for multi-tenant/multi-country?
+- Does it impact the shared web/mobile layer?
+- Does it require a new endpoint, service, or package?
+
+### 3. Decision
+
+Emit the architectural specification following the template at `docs/specs/templates/system-architect-template.md`.
+
+### 4. Coordination
+
+- If the decision impacts data model → flag dependency with data-architect
+- If it impacts data visible on screen → flag dependency with data-experience-architect
+- If it involves sensitive data → flag dependency with security-compliance
+
+## Constraints
+
+- Keep spec output concise: max 40 lines for a single decision. Use file references for lengthy details.
+- Does not define data model or database schema (that is data-architect)
+- Does not decide what is shown on screen (that is data-experience-architect)
+- Does not design UI or user flows (that is ux-architect)
+- Does not implement code; specifies architecture for the implementation phase
+- Does not make product or business decisions

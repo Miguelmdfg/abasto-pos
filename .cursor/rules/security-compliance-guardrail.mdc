@@ -1,0 +1,25 @@
+---
+description: Lightweight guardrail that triggers compliance awareness when editing data-sensitive files. If personal data or minor data is involved, invoke the security-compliance subagent for a full ruling.
+alwaysApply: false
+globs:
+  - packages/db/migrations/**
+  - packages/db/src/**
+  - packages/backend/src/routes/**
+  - packages/backend/src/services/**
+  - packages/backend/src/middleware/auth/**
+  - packages/shared/src/types/**
+  - packages/frontend/view-models/**
+---
+
+# Security Compliance Guardrail
+
+When editing files in these paths, pause and assess:
+
+1. **Does this change capture, store, expose, or transform personal data?** (name, email, phone, address, academic records)
+2. **Does it involve data belonging to minors?** (students under 18, especially under 13)
+3. **Does it change who can access data?** (role permissions, API filters, view-model exposure)
+4. **Does it create or modify a migration that adds columns storing sensitive information?**
+
+If the answer to **any** of the above is **yes**: invoke the **security-compliance** subagent with the relevant context and wait for its ruling (APPROVED / APPROVED WITH CONDITIONS / BLOCKED) before proceeding with implementation.
+
+If the answer to all is **no**: proceed normally.

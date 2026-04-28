@@ -1,0 +1,120 @@
+---
+description: Task orchestration protocol for complex or multi-domain requests. Decomposes requests, activates agents in correct order, persists specs between phases, detects unanticipated impact, and consolidates results. The main agent executes this protocol directly.
+alwaysApply: true
+---
+
+# Task Orchestrator Protocol
+
+## Complexity classification
+
+Classify every request BEFORE planning. State the tier explicitly.
+
+```
+TRIVIAL (0 strategic agents):
+  Single-file fix, typo, style change, config tweak, small refactor
+  within one package. No orchestration. Main agent handles directly.
+  No spec persistence. No agents invoked.
+  → Stop here. Do not produce a plan.
+
+SCOPED (1-2 strategic agents):
+  Change confined to one domain. Examples:
+  - Schema-only change → data-architect (+ security-compliance if sensitive)
+  - New endpoint → system-architect only
+  - UI tweak with no data changes → ux-architect only
+  Persist specs only for participating agents.
+  Activate only relevant guardians, not all 5.
+
+FULL (3+ strategic agents):
+  Feature spanning multiple domains, new screen with data model changes,
+  cross-cutting refactor. Full 7-phase circuit.
+  All persistence and validation rules apply.
+```
+
+## Ecosystem agents
+
+```
+STRATEGIC:  researcher, system-architect, data-architect,
+            security-compliance, data-experience-architect,
+            ux-architect
+
+GUARDIANS:  quality-sweep, architecture-boundary, rn-compat,
+            component-auditor, spec-compliance
+```
+
+## The 7 phases
+
+```
+F1 EXPLORATION       researcher (scope per task)
+F2 STRUCTURAL        system-architect + data-architect + security-compliance
+                     (parallel or sequential per dependencies)
+F3 INFORMATIONAL     data-experience-architect
+F4 DESIGN            ux-architect
+F5 IMPLEMENTATION    main agent or Lead
+F6 VALIDATION        all guardians in parallel
+F7 CLOSURE           orchestrator consolidates and reports to Lead
+```
+
+Not every request activates all 7 phases. Use the complexity tier to determine which apply. TRIVIAL skips all phases. SCOPED activates only relevant phases. FULL activates all. When in doubt about whether an agent should participate, include it.
+
+## Request analysis
+
+```
+Services, APIs, patterns?            → system-architect
+Data model, schema?                  → data-architect
+Personal data, minors, roles?        → security-compliance
+Screens, visible data?               → DEA → ux-architect
+Code ready for validation?           → guardians
+Needs codebase context?              → researcher first
+```
+
+## Spec persistence
+
+```
+DIRECTORY: .specs/{cycle-id}/
+CYCLE-ID: {type}-{short-description} (e.g. feature-teacher-dashboard)
+
+STRUCTURE:
+  .specs/{cycle-id}/
+    ├── meta.md                      (request, agents, order, status)
+    ├── {agent}.md                   (only those that participated)
+    └── validation-report.md         (consolidated report from F7)
+
+RULES:
+  - meta.md is created BEFORE activating any agent
+  - Each spec is persisted IMMEDIATELY after agent output
+  - No downstream agent is activated without upstream specs persisted
+  - If an agent did not participate, its file does not exist
+```
+
+## Token optimization
+
+```
+PRINCIPLE: Full specs live in filesystem, not in prompts.
+
+WHEN ACTIVATING AN AGENT, pass executive summary (3-5 lines):
+  AGENT: [name]
+  KEY DECISION: [1-2 lines]
+  IMPACT ON YOUR DOMAIN: [1-2 lines]
+  FULL SPEC: .specs/{cycle-id}/{agent}.md
+
+The agent reads the full spec from filesystem if it needs detail.
+NEVER inject multiple full specs into a prompt.
+```
+
+## Unanticipated impact detection
+
+After each phase, evaluate if the output reveals impact on areas outside the plan. If yes: update meta.md, activate the additional agent, persist its spec, evaluate if agents that already executed need reactivation with the delta.
+
+## Escalation to Lead
+
+Escalate only when: agents contradict each other and resolution is a product decision, impact significantly exceeds original scope, there are gaps no agent resolves, or security-compliance emits BLOCKED with non-technical resolution.
+
+## Planning and report formats
+
+Follow the templates at `docs/specs/templates/orchestrator-formats.md` for both the execution plan (SCOPED/FULL tiers) and the final report.
+
+## Constraints
+
+- This protocol organizes and sequences work; it does not replace the Lead's judgment
+- Do not activate guardians (F6) preemptively — only when there is implementation to validate
+- Do not make architecture, data, or business decisions as part of orchestration — flag them for the appropriate agent
