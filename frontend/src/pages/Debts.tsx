@@ -207,7 +207,7 @@ export function Debts() {
                   </button>
                 ))}
               </div>
-              <div className="max-h-[480px] space-y-2 overflow-y-auto pr-1">
+              <div className="max-h-120 space-y-2 overflow-y-auto pr-1">
                 {filtered.length === 0 ? (
                   <p className="py-4 text-center text-sm text-slate-500">No hay clientes para mostrar.</p>
                 ) : filtered.map((d) => {
@@ -250,7 +250,7 @@ export function Debts() {
           {/* ── Detalle cliente ── */}
           <Card className="border border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
             {!selected ? (
-              <Card.Content className="flex min-h-[300px] items-center justify-center p-8">
+              <Card.Content className="flex min-h-75 items-center justify-center p-8">
                 <p className="text-center text-sm text-slate-400">Selecciona un cliente para ver su detalle.</p>
               </Card.Content>
             ) : (

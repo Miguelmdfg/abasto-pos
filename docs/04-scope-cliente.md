@@ -114,6 +114,8 @@ Cada fila guarda: método, monto, moneda original (Bs o USD), tasa snapshot, ref
 
 **Pregunta al cliente:** ¿OK con que "Mixto" desaparezca como método de pago y pase a ser "una venta con varios pagos"?
 
+**R=** OK, el cliente esta de acuerdo con hacer una venta con varios pagos en vez del pago Mixto
+
 ### 2.2 Métodos de pago como tabla · MD-010
 
 **Propuesta:** los métodos de pago no son un enum fijo; viven en una tabla `PaymentMethod` con catálogo: efectivo BS, efectivo USD, pago móvil, punto de venta, nota de crédito, tarjeta.
@@ -124,6 +126,8 @@ Cada fila guarda: método, monto, moneda original (Bs o USD), tasa snapshot, ref
 - "Métodos habilitados" en Configuración pasa a ser una columna `active` en la tabla.
 
 **Pregunta al cliente:** ¿hay métodos adicionales previstos a futuro? (Zelle, criptomonedas, transferencia bancaria…)
+
+**R=** El metodo de pago de "Transferencia" ya se encuentra en el sistema, ademas, el cliente no tiene previsto aceptar pagos tales como "Zelle" o "Criptomonedas" en un futuro 
 
 ### 2.3 Multi-moneda: Bs como moneda funcional · MD-011
 
@@ -136,6 +140,8 @@ Cada fila guarda: método, monto, moneda original (Bs o USD), tasa snapshot, ref
 **Por qué importa:** refleja la realidad del comercio venezolano. La caja física tiene billetes en ambas monedas y hay que arquearlas por separado, pero la contabilidad necesita una sola moneda.
 
 **Pregunta al cliente:** ¿es Bs efectivamente la moneda funcional del negocio, o el cliente prefiere ver todos los reportes principales en USD?
+
+**R=** El cliente prefiere la visualizacion de todos los campos en $ y su conversion en BS a la taza del dia 
 
 ### 2.4 Saldo de la nota: derivado, no almacenado · MD-017
 
@@ -164,13 +170,18 @@ saldo = monto de la nota − suma de pagos a la nota
 
 **Por qué importa:** sin esto, no se puede auditar si el dinero del abono efectivamente entró a la caja del cajero ni se puede integrar al cierre del turno.
 
+
 **Pregunta al cliente:** ¿OK con que un abono pase a tener los mismos campos que un pago de venta (porque, en esencia, lo es)?
+
+**R=** Correcto, debe tener los mismos campos que un pago de venta. OJO: el monto de la deuda debe estar en $ y abajo en Bs a la tasa del dia, asi evitamos perdidas de dinero por tema inflacionario 
 
 ### 2.6 Estado de la nota: derivado · MD-019
 
 **Propuesta:** los estados (`vigente`, `por vencer`, `vencida`, `saldada`) se calculan en runtime según el saldo y los días desde la emisión. No se almacenan.
 
 **Pregunta al cliente:** ¿cuáles son los **umbrales exactos** que definen "por vencer" y "vencida"? Hoy el código usa hardcoded (≥20 días = por vencer, >30 días = vencida).
+
+**R=** Mantenemos estos limites (20 dias = por vencer; 30 dias = Vencida) *Debe haber una notificacion en ambos casos*
 
 ### 2.7 Umbrales en Configuración, no hardcodeados · MD-020
 
@@ -183,6 +194,8 @@ saldo = monto de la nota − suma de pagos a la nota
 
 **Pregunta al cliente:** ¿son estos umbrales globales o por cliente individual? (Por ejemplo, ¿cliente A tiene 30 días de gracia y cliente B tiene 15?)
 
+**R=** En principio son globales, pero, propongo que a la hora de hacer una nota de credito se mantengan estos limites globales por defecto y a la hora de querer modificar (monto total de credito o plazo de pago) deba requerir autorizacion del dueño mediante un pin
+
 ### 2.8 Turno de caja como una sola entidad (apertura + cierre) · MD-021
 
 **Propuesta:** una tabla `CashierShift` con campos de apertura (`opened_at`, monto inicial) y campos de cierre (`closed_at`, totales, diferencia). Mientras `closed_at` está vacío, el turno está abierto.
@@ -193,6 +206,8 @@ saldo = monto de la nota − suma de pagos a la nota
 - "¿Hay turno abierto del cajero X?" se responde con un `WHERE closed_at IS NULL`.
 
 **Pregunta al cliente:** ¿puede haber **dos cajeros operando simultáneamente** en cajas distintas? Si sí, ¿cada caja física tiene su propio turno o el turno es por persona?
+
+**R=** No, solo puede haber un cajero operando a la vez, esto debido a que hay una sola caja que se opera en dos o tres turnos (mañana, tarde y noche)
 
 ### 2.9 Cada venta pertenece a un turno · MD-022
 
@@ -206,6 +221,8 @@ saldo = monto de la nota − suma de pagos a la nota
 
 **Pregunta al cliente:** ¿cuándo se hace un "cierre parcial"? ¿Es un corte para contar caja sin cerrar el turno? ¿Lo dispara el cajero o el dueño? Necesitamos entender el flujo real para confirmar el modelo.
 
+**R=** PREGUNTAR AL CLIENTE
+
 ### 2.11 Usuario con estado activo y contraseña hasheada · MD-024
 
 **Propuesta:** la tabla `User` tiene:
@@ -214,6 +231,8 @@ saldo = monto de la nota − suma de pagos a la nota
 - `password_hash` — la contraseña se guarda como hash (bcrypt o argon2), nunca en texto plano.
 
 **Pregunta al cliente:** ¿se necesita auto-recuperación de contraseña (vía email) o el dueño la resetea manualmente?
+
+**R=** El dueño resetea manualmente la de los cajeros, pero la de el propia deberia poder recuperarse por gmail
 
 ### 2.12 Auditoría básica universal · MD-025
 
@@ -236,6 +255,8 @@ saldo = monto de la nota − suma de pagos a la nota
 
 **Pregunta al cliente:** ¿el formato de los códigos (`VTA-`, `NC-`, `CIERRE-`) está bien? ¿Se quiere algún prefijo distinto?
 
+**R=** El formato planteado esta bien 
+
 ---
 
 ## 3. Preguntas abiertas (bloqueantes)
@@ -250,52 +271,83 @@ Cinco preguntas concretas:
 
 1. **¿El IVA va por línea o por venta?**
    - Por línea: cada producto puede tener su propio IVA (algunos exentos, otros gravados, otros con IVA reducido).
-   - Por venta: un único porcentaje se aplica al total.
+   - Por venta: un único porcentaje se aplica al total. 
+
+   **R=** PREGUNTAR AL CLIENTE
 
 2. **¿Existen productos exentos o con IVA distinto al estándar?**
    - Si sí → necesita ser por línea, y `Product` lleva el porcentaje de IVA.
+
+    **R=** PREGUNTAR AL CLIENTE
 
 3. **¿Los precios mostrados al cliente son brutos o netos?**
    - Brutos (con IVA incluido, "precio al público"): el IVA se calcula desglosado al final solo para el comprobante.
    - Netos (sin IVA): se suma al final.
 
+    **R=** PREGUNTAR AL CLIENTE
+
 4. **¿El comprobante de venta debe mostrar el desglose** `subtotal`, `IVA`, `total`?
+
+ **R=** PREGUNTAR AL CLIENTE
 
 5. **¿La tasa de IVA es fija (por ej. 16%) o cambia con frecuencia?**
    - Si cambia, ¿se necesita historial (como con precios) para reconstruir IVA de ventas pasadas?
+
+    **R=** PREGUNTAR AL CLIENTE
 
 ### 3.2 Validaciones de negocio que el código no tiene
 
 El relevamiento mostró que estas reglas no están implementadas. Antes de modelar, conviene confirmar **qué pasa cuando se violan**:
 
 - **Stock insuficiente al vender:** ¿se bloquea la venta? ¿se permite con advertencia? ¿se permite y se registra stock negativo (caso "vendí algo que no había cargado en sistema")?
+
+  **R=** PREGUNTAR AL CLIENTE
+
 - **Límite de crédito superado al emitir nota:** ¿se bloquea? ¿requiere autorización del dueño con clave/PIN? ¿se registra la autorización?
+
+ **R=** Se requiere autorizacion del dueño y se registra la autorizacion
+
 - **Tasa de cambio sin actualizar > 24 h:** ¿se permite vender? ¿solo advertencia? ¿bloqueo total?
+
+ **R=** No se permite vender hasta que se actualice la tasa
+
 - **Venta sin turno abierto:** ¿se bloquea? (Es lo que dicen los requerimientos, pero conviene confirmar.)
+
+ **R=** No puede haber venta sin turno abierto 
 
 ### 3.3 Roles y permisos
 
 El código actual maneja dos roles: `cajero` y `dueno`. Los requerimientos hablan de "Vendedor" y "Dueño".
 
 - **¿Se necesitan más roles a futuro?** Por ejemplo: supervisor (ve reportes pero no edita), administrador de inventario, contador.
+
+ **R=** Por ahora no esta pronosticado, solo seran cajeros hasta los momentos
+
 - **¿Se necesitan permisos granulares** (ej: "este cajero puede ver costos pero no editarlos") o el modelo de dos roles fijos es suficiente?
+
+ **R=** Roles fijos son suficientes
+
 - **¿Un mismo usuario puede tener múltiples roles** o se elige uno?
+
+ **R=** Se elige uno 
 
 ### 3.4 Datos del cliente en una nota de crédito
 
 ¿Qué datos son **obligatorios** para registrar a un cliente al emitir su primera nota?
 
-- Nombre — ¿obligatorio?
-- Cédula/RIF — ¿obligatorio? ¿único? ¿se aceptan extranjeros?
-- Teléfono — ¿obligatorio?
-- Email — ¿se solicita?
-- Dirección — ¿se solicita?
+- Nombre — ¿obligatorio?// SI
+- Cédula/RIF — ¿obligatorio? ¿único? ¿se aceptan extranjeros? // OBLIGATORIO, SI SE ACEPTAN EXTRANJEROS
+- Teléfono — ¿obligatorio? // OBLIGATORIO 
+- Email — ¿se solicita? // NO SE SOLICITA
+- Dirección — ¿se solicita? // DIRECCION CORTA
 
 ### 3.5 Múltiples ventas en una sola nota de crédito
 
 El modelo propuesto permite que una nota de crédito agrupe **N ventas** (`Sale.credit_note_id` apunta a la nota; pueden haber muchas ventas que apunten a la misma nota).
 
 **Pregunta:** ¿se usa este caso? Por ejemplo: "le abro una nota a Pedro y voy cargándole compras durante el mes hasta que paga". O cada venta a crédito genera una nota nueva.
+
+ **R=** PREGUNTAR AL CLIENTE
 
 > Esto cambia el flujo del POS: si una nota agrupa varias ventas, hay que decidir cuándo se "cierra" la nota o si se mantiene abierta hasta saldarla.
 
@@ -304,6 +356,8 @@ El modelo propuesto permite que una nota de crédito agrupe **N ventas** (`Sale.
 Hoy los precios del producto se guardan en Bs y la conversión a USD es un cálculo (`price / tasa`).
 
 **Pregunta:** ¿el dueño establece los precios en **Bs o en USD**?
+
+ **R=** Establece los precios en $$ y se hace la conversion a bs con la tasa del dia 
 
 - Si en USD: `Product.price_usd` es la fuente de verdad y el precio en Bs se calcula con la tasa vigente. Esto es lo más común en Venezuela hoy.
 - Si en Bs: como está hoy. Pero significa que el precio "real" cambia con la tasa y hay que ajustarlo manualmente cuando la tasa se mueve.
@@ -320,6 +374,8 @@ El sistema maneja BCV y Paralelo (decidido). ¿Cuál se usa por defecto para:
 
 ¿O el dueño elige la tasa por configuración global, o por venta?
 
+ **R=** PREGUNTAR AL CLIENTE
+
 ### 3.8 Apertura de caja: ¿se cuenta lo físico?
 
 El requerimiento dice que en la apertura el cajero ingresa el monto inicial. ¿Esto es:
@@ -328,6 +384,8 @@ El requerimiento dice que en la apertura el cajero ingresa el monto inicial. ¿E
 - Un arqueo: el dueño deja un monto fijo de "fondo" y el cajero confirma que lo recibió.
 
 Y **al cierre:** ¿el monto inicial se devuelve al fondo o queda en la caja física?
+
+ **R=** PREGUNTAR AL CLIENTE
 
 ---
 
