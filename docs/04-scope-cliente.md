@@ -221,7 +221,7 @@ saldo = monto de la nota − suma de pagos a la nota
 
 **Pregunta al cliente:** ¿cuándo se hace un "cierre parcial"? ¿Es un corte para contar caja sin cerrar el turno? ¿Lo dispara el cajero o el dueño? Necesitamos entender el flujo real para confirmar el modelo.
 
-**R=** PREGUNTAR AL CLIENTE
+**R=** Hay **varios cierres al día**, uno en cada **cambio de turno** (mañana, tarde, noche). Además se hacen **cortes de caja intermedios sin cerrar el turno** — para contar caja sin terminar el turno. Tanto el **cajero** como el **dueño** pueden ejecutarlos. El dueño requiere **registro auditable** de ambos (cierres de turno y cortes parciales) para verificación.
 
 ### 2.11 Usuario con estado activo y contraseña hasheada · MD-024
 
@@ -273,27 +273,27 @@ Cinco preguntas concretas:
    - Por línea: cada producto puede tener su propio IVA (algunos exentos, otros gravados, otros con IVA reducido).
    - Por venta: un único porcentaje se aplica al total. 
 
-   **R=** PREGUNTAR AL CLIENTE
+   **R=** **Por línea** — El IVA esta incluido en el precio de venta
 
 2. **¿Existen productos exentos o con IVA distinto al estándar?**
    - Si sí → necesita ser por línea, y `Product` lleva el porcentaje de IVA.
 
-    **R=** PREGUNTAR AL CLIENTE
+    **R=** **Sí** — no todos los productos comparten el mismo IVA; algunos pueden estar exentos u otros gravados.
 
 3. **¿Los precios mostrados al cliente son brutos o netos?**
    - Brutos (con IVA incluido, "precio al público"): el IVA se calcula desglosado al final solo para el comprobante.
    - Netos (sin IVA): se suma al final.
 
-    **R=** PREGUNTAR AL CLIENTE
+    **R=** **Brutos (IVA incluido)** — el precio de venta al público ya incluye IVA.
 
 4. **¿El comprobante de venta debe mostrar el desglose** `subtotal`, `IVA`, `total`?
 
- **R=** PREGUNTAR AL CLIENTE
+ **R=** **Por el momento, no** — no se requiere comprobante formal con ese desglose; se manejaría como una nota simple hasta implementarlo.
 
 5. **¿La tasa de IVA es fija (por ej. 16%) o cambia con frecuencia?**
    - Si cambia, ¿se necesita historial (como con precios) para reconstruir IVA de ventas pasadas?
 
-    **R=** PREGUNTAR AL CLIENTE
+    **R=** Tasa **fija del 16%** cuando aplique IVA. No se prevé historial de tasas por ahora.
 
 ### 3.2 Validaciones de negocio que el código no tiene
 
@@ -347,7 +347,7 @@ El modelo propuesto permite que una nota de crédito agrupe **N ventas** (`Sale.
 
 **Pregunta:** ¿se usa este caso? Por ejemplo: "le abro una nota a Pedro y voy cargándole compras durante el mes hasta que paga". O cada venta a crédito genera una nota nueva.
 
- **R=** PREGUNTAR AL CLIENTE
+ **R=** **Sí** — una nota de crédito agrupa **todas las ventas** del cliente hasta saldarla (ej.: compras del mes). El detalle debe mostrarse **desglosado por cada venta, con su fecha**.
 
 > Esto cambia el flujo del POS: si una nota agrupa varias ventas, hay que decidir cuándo se "cierra" la nota o si se mantiene abierta hasta saldarla.
 
@@ -374,7 +374,7 @@ El sistema maneja BCV y Paralelo (decidido). ¿Cuál se usa por defecto para:
 
 ¿O el dueño elige la tasa por configuración global, o por venta?
 
- **R=** PREGUNTAR AL CLIENTE
+ **R=** Se usa la **tasa BCV del día**, configurada **globalmente** y actualizada diariamente. El precio en **USD es la referencia fija**; el precio en Bs se calcula con la tasa BCV vigente al momento de la operación.
 
 ### 3.8 Apertura de caja: ¿se cuenta lo físico?
 
@@ -385,7 +385,7 @@ El requerimiento dice que en la apertura el cajero ingresa el monto inicial. ¿E
 
 Y **al cierre:** ¿el monto inicial se devuelve al fondo o queda en la caja física?
 
- **R=** PREGUNTAR AL CLIENTE
+ **R=** **Sí se cuenta el dinero físico** al abrir: el cajero **declara el monto** con el que inicia el día/turno (arqueo de apertura). Al cierre, el **monto inicial permanece en la caja física** — no se retira al fondo.
 
 ---
 
