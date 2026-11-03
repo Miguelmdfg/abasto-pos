@@ -2,7 +2,7 @@
 
 > Fotografía del estado del frontend en `frontend/src/` orientada al diseño del modelo de datos. Solo describe lo que **existe en código**: tipos, persistencia, relaciones y cálculos. No propone modelo.
 >
-> **Última verificación:** 2026-04-28 (rama `final-code`). Verificar contra el código antes de tomar decisiones de schema.
+> **Última verificación del relevamiento detallado:** 2026-04-28 (rama `final-code`). Este documento conserva una fotografía histórica del modelo local; algunas afirmaciones de persistencia ya no describen el código vigente, que integra Supabase parcialmente. Para el estado actual consultar [`01-estado-implementacion.md`](01-estado-implementacion.md) y [`05-pendientes-auditoria.md`](05-pendientes-auditoria.md).
 >
 > **Nota de terminología:** los nombres de tipo del código (`DebtItem`, `Abono`, método `'fiado'`, módulo "Deudas") se conservan en este documento porque describe el código actual. En el modelo de datos esos términos se renombran a **"Notas de Crédito"** / `CreditNote` / `CreditNotePayment` — ver MD-014 en [`03-decisiones-modelo-datos.md`](03-decisiones-modelo-datos.md).
 
@@ -285,9 +285,11 @@ type ProductCostRow = {
 
 ---
 
-## 3. Persistencia (`localStorage`)
+## 3. Persistencia local observada en el relevamiento histórico
 
-Todo `localStorage`; sin backend. Helpers en `lib/storage.ts`.
+> La tabla de esta sección describe el código en la fecha de verificación indicada al inicio (2026-04-28); no representa la persistencia vigente. La app actual usa Supabase en operaciones conectadas y reserva `localStorage` para preferencias y modo demo. Ver [`05-pendientes-auditoria.md`](05-pendientes-auditoria.md).
+
+En esa fotografía histórica, los datos listados se guardaban mediante los helpers de `lib/storage.ts`.
 
 | Clave | Tipo lógico | Formato | Tope | Lectura | Escritura |
 |---|---|---|---|---|---|

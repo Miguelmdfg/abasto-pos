@@ -12,6 +12,7 @@ import { DebtsProvider } from './lib/debts-context';
 import { CashierShiftProvider } from './lib/cashier-shift';
 import { seedDemoDataIfEmpty } from './lib/demo-seed';
 import { AuthProvider } from './lib/auth';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 
 applyTheme(getInitialTheme());
 seedDemoDataIfEmpty();
@@ -26,7 +27,9 @@ createRoot(document.getElementById('root')!).render(
               <SalesHistoryProvider>
                 <DebtsProvider>
                   <CashierShiftProvider>
-                    <App />
+                    <AppErrorBoundary>
+                      <App />
+                    </AppErrorBoundary>
                   </CashierShiftProvider>
                 </DebtsProvider>
               </SalesHistoryProvider>

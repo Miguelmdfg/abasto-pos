@@ -1,6 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { readLocalStorage, writeLocalStorage } from './storage';
+import { loadRemoteAppSettings, saveRemoteAppSettings } from './app-settings-api';
+import { isSupabaseConfigured } from './supabase';
+import { useAuth } from './auth';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,36 +81,95 @@ function saveSettings(settings: AppSettings): void {
 
 type SettingsContextValue = {
   settings: AppSettings;
-  updateSettings: (partial: Partial<AppSettings>) => void;
-  resetSettings: () => void;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  refreshSettings: () => Promise<boolean>;
+  updateSettings: (partial: Partial<AppSettings>) => Promise<void>;
+  resetSettings: () => Promise<void>;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<AppSettings>(loadSettings);
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const [settings, setSettings] = useState<AppSettings>(() => isSupabaseConfigured ? DEFAULT_SETTINGS : loadSettings());
+  const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshSettings = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setError(null);
+      setIsLoading(false);
+      return true;
+    }
+
+    setIsLoading(true);
+    try {
+      const remoteSettings = await loadRemoteAppSettings();
+      setSettings(remoteSettings);
+      setError(null);
+      return true;
+    } catch {
+      setError('No se pudo cargar la configuración compartida. Verifica la conexión y que las migraciones de configuración estén aplicadas.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthLoading) return;
+    if (user || !isSupabaseConfigured) void refreshSettings();
+  }, [isAuthLoading, refreshSettings, user]);
 
   const value = useMemo<SettingsContextValue>(() => ({
     settings,
-    updateSettings(partial) {
-      setSettings((prev) => {
-        const next: AppSettings = {
-          ...prev,
-          ...partial,
-          metodos_habilitados: {
-            ...prev.metodos_habilitados,
-            ...(partial.metodos_habilitados ?? {}),
-          },
-        };
-        saveSettings(next);
-        return next;
-      });
+    isLoading,
+    isSaving,
+    error,
+    refreshSettings,
+    async updateSettings(partial) {
+      if (isLoading) throw new Error('SETTINGS_NOT_LOADED');
+      const next: AppSettings = {
+        ...settings,
+        ...partial,
+        metodos_habilitados: {
+          ...settings.metodos_habilitados,
+          ...(partial.metodos_habilitados ?? {}),
+        },
+      };
+
+      setIsSaving(true);
+      try {
+        if (isSupabaseConfigured) await saveRemoteAppSettings(next);
+        else saveSettings(next);
+        setSettings(next);
+        setError(null);
+      } catch {
+        setError('No se pudo guardar la configuración. Los cambios no fueron aplicados.');
+        throw new Error('SETTINGS_SAVE_FAILED');
+      } finally {
+        setIsSaving(false);
+      }
     },
-    resetSettings() {
-      saveSettings(DEFAULT_SETTINGS);
-      setSettings(DEFAULT_SETTINGS);
+    async resetSettings() {
+      if (isLoading) throw new Error('SETTINGS_NOT_LOADED');
+      setIsSaving(true);
+      try {
+        if (isSupabaseConfigured) await saveRemoteAppSettings(DEFAULT_SETTINGS);
+        else saveSettings(DEFAULT_SETTINGS);
+        setSettings(DEFAULT_SETTINGS);
+        setError(null);
+      } catch {
+        setError('No se pudo restablecer la configuración. Los cambios no fueron aplicados.');
+        throw new Error('SETTINGS_SAVE_FAILED');
+      } finally {
+        setIsSaving(false);
+      }
     },
-  }), [settings]);
+  }), [error, isLoading, isSaving, refreshSettings, settings]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

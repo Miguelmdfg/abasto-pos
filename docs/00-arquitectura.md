@@ -13,7 +13,7 @@
 | Estilos         | Tailwind CSS 4 (vía `@tailwindcss/vite`) |
 | Routing         | react-router-dom 7                       |
 | Estado global   | Context API de React (sin librería extra)|
-| Persistencia    | `localStorage` del navegador             |
+| Persistencia    | Supabase para operaciones conectadas; `localStorage` para preferencias y modo demo |
 | Lint            | ESLint 9 + typescript-eslint             |
 
 Definido en [`frontend/package.json`](../frontend/package.json).
@@ -30,13 +30,15 @@ frontend/src/
 │   ├── Home.tsx          (/hello — pública)
 │   ├── Dashboard.tsx     (/   — solo dueño)
 │   ├── Pos.tsx           (/pos)
-│   ├── Inventory.tsx     (/inventory)
+│   ├── Inventory.tsx     (/inventory — productos/importación en pestañas)
 │   ├── Debts.tsx         (/debts)
-│   ├── SalesHistory.tsx  (/sales-history — solo dueño)
-│   ├── CashClosures.tsx  (/cash-closures — solo dueño)
+│   ├── SalesHistory.tsx  (/sales-history — ventas/cierres en pestañas, solo dueño)
+│   ├── CashClosures.tsx  (pestaña de /sales-history)
 │   ├── Costs.tsx         (/costs — solo dueño)
-│   ├── Settings.tsx      (/settings — solo dueño)
-│   ├── Reports.tsx       (no enrutada actualmente)
+│   ├── Settings.tsx      (/settings — general/usuarios en pestañas, solo dueño)
+│   ├── UserManagement.tsx (pestaña de /settings)
+│   ├── InventoryImport.tsx (pestaña de /inventory)
+│   ├── Reports.tsx       (/reports — solo dueño)
 │   └── NotFound.tsx
 ├── components/
 │   ├── AppLayout.tsx     # layout base con sidebar + header
@@ -55,7 +57,7 @@ frontend/src/
 │   ├── i18n-dictionaries.ts
 │   ├── theme.ts
 │   ├── storage.ts        # readLocalStorage / writeLocalStorage
-│   └── demo-seed.ts      # carga datos demo la primera vez
+│   └── demo-seed.ts      # inicializador demo (actualmente no inserta datos)
 └── mocks/                # catálogo y datos de demostración
     ├── products.ts
     ├── dashboard.ts
@@ -79,6 +81,8 @@ cajero: ['/pos', '/inventory', '/debts']
 
 > **Nota:** los identificadores en código son `dueno` y `cajero` (sin tilde). La función `normalizeRole` también acepta `dueño`, `owner`, `admin` como alias de `dueno` por compatibilidad.
 
+Las pantallas de usuarios, importación de inventario y cierres se muestran como pestañas dentro de Configuración, Inventario e Historial de ventas, respectivamente. Sus antiguas URLs redirigen a la pestaña correspondiente y mantienen el guard de rol.
+
 ## 4. Composición de providers
 
 [`main.tsx`](../frontend/src/main.tsx) monta los providers en este orden (de fuera a dentro):
@@ -95,7 +99,7 @@ I18nProvider
                             └── <App />
 ```
 
-El orden es deliberado: `ExchangeRateProvider` lee de `RateHistoryProvider`; `SalesHistoryProvider` consume `Settings` y `ExchangeRate`; etc. Antes de montar la app, `seedDemoDataIfEmpty()` carga datos demo si las claves correspondientes están vacías.
+El orden es deliberado: `AuthProvider` envuelve los contextos que recargan sus datos remotos al restaurarse/iniciarse una sesión. `seedDemoDataIfEmpty()` actualmente no inserta datos.
 
 ## 5. Contextos (estado global)
 
@@ -110,41 +114,44 @@ El orden es deliberado: `ExchangeRateProvider` lee de `RateHistoryProvider`; `Sa
 | `CashierShiftContext` | `lib/cashier-shift.tsx`              | Aperturas/cierres de caja |
 | `I18nContext`         | `lib/i18n.tsx` + `i18n-dictionaries` | Idioma activo y traducciones |
 
-Cada contexto expone un `Provider` y un hook `useXxx()` que lanza error si se usa fuera del provider. Todos persisten su estado en `localStorage` mediante los helpers de `lib/storage.ts`.
+Cada contexto expone un `Provider` y un hook `useXxx()` que lanza error si se usa fuera del provider. Los contextos de negocio priorizan Supabase cuando está configurado; los datos locales de negocio se usan únicamente en modo demo/desarrollo.
 
 ## 6. Persistencia (`localStorage`)
 
-No hay backend. Toda la información se guarda con prefijo `abasto.*`:
+Supabase es la fuente de verdad para los flujos conectados. Estas claves locales son preferencias o datos usados únicamente en modo demo/desarrollo:
 
 | Clave                          | Contenido |
 |--------------------------------|-----------|
-| `abasto.auth.user`             | Sesión actual (objeto `AuthUser`) |
-| `abasto.settings`              | Configuración del negocio |
-| `abasto.exchangeRate.value`    | Tasa Bs/USD actual |
-| `abasto.exchangeRate.updatedAt`| Timestamp de última actualización de tasa |
-| `abasto.rateHistory`           | Historial de tasas |
-| `abasto.salesHistory`          | Lista de ventas |
-| `abasto.debts`                 | Lista de deudas |
-| `abasto.cashierShifts`         | Aperturas/cierres de caja |
+| `abasto.auth.user`             | Usuario de demo, solo desarrollo con `VITE_DEMO_AUTH=true` |
+| `abasto.settings`              | Configuración local del modo demo |
+| `abasto.exchangeRate.value`    | Tasa manual del modo demo |
+| `abasto.exchangeRate.updatedAt`| Timestamp de tasa demo |
+| `abasto.rateHistory`           | Historial de tasas del modo demo |
+| `abasto.salesHistory`          | Historial local solo del modo demo |
+| `abasto.debts`                 | Cartera local solo del modo demo |
+| `abasto.cashierShifts`         | Cierres locales solo del modo demo |
 | `abasto.lang`                  | Idioma activo (`es`/`en`) |
 | `abasto.theme`                 | Tema (`light`/`dark`) |
 | `abasto.demo.seeded.v`         | Marca de versión de seed demo aplicada |
 
-**Implicaciones:**
+**Persistencia remota conectada:**
 
-- Limpiar el almacenamiento del navegador borra todos los datos.
-- No hay sincronización entre dispositivos ni backups automáticos.
-- La sesión es local: el "login" valida contra usuarios hardcodeados en `Login.tsx`, no contra una API.
+- Auth/perfiles, catálogo, ventas/pagos, caja y tasas históricas consultan Supabase cuando hay sesión.
+- La configuración empresarial usa `app_settings`; la columna de métodos de pago necesita la migración `20261103100000_persist_payment_method_settings.sql`.
+- Crédito, tasa BCV automatizada, importación y administración dependen de migraciones/funciones que deben desplegarse y probarse en el proyecto remoto.
+- El módulo Costos es una calculadora en memoria: sus valores manuales no se sincronizan ni sobreviven al salir de la página.
+- Tema e idioma se guardan en `localStorage` intencionalmente como preferencias de dispositivo.
+- Una falla al cargar la configuración remota se informa y el POS bloquea el registro de ventas; no se sustituye por configuración local.
 
 ## 7. Datos demo
 
-Al primer arranque, [`lib/demo-seed.ts`](../frontend/src/lib/demo-seed.ts) detecta claves vacías y carga datos de [`mocks/`](../frontend/src/mocks/):
+Los mocks de [`mocks/`](../frontend/src/mocks/) se conservan como material de desarrollo; `lib/demo-seed.ts` no los inserta automáticamente:
 
 - `products.ts` → catálogo inicial usado por POS e Inventario.
 - `demo-data.ts` → ventas y deudas demo.
 - `dashboard.ts` → KPIs/series para el Dashboard.
 
-La marca `abasto.demo.seeded.v` evita re-seed en cada recarga.
+Los productos de demostración no sustituyen al catálogo remoto cuando Supabase está configurado.
 
 ## 8. Internacionalización y tema
 
@@ -157,13 +164,13 @@ La marca `abasto.demo.seeded.v` evita re-seed en cada recarga.
 2. Añadir la ruta en `App.tsx` (envolverla en `RoleProtectedRoute`).
 3. Sumar la ruta a `ROLE_ALLOWED_ROUTES` en `lib/auth.tsx` para los roles que deben verla.
 4. Si requiere estado nuevo, crear un contexto en `lib/` y montarlo en `main.tsx` en el orden correcto.
-5. Si necesita persistir, usar `readLocalStorage` / `writeLocalStorage` de `lib/storage.ts` con una clave `abasto.<nombre>`.
+5. Si el dato es de negocio, persistirlo mediante Supabase y definir RLS/RPC; reservar `localStorage` para preferencias locales o modo demo.
 6. Añadir entrada en `AppSidebar.tsx` si debe ser navegable desde la barra lateral.
 
 ## 10. Limitaciones conocidas
 
-- Sin backend → no hay multiusuario real, ni control de concurrencia.
-- Sin BD → consultas costosas (filtros sobre todo el historial) se hacen en memoria.
-- `localStorage` tiene límite ~5 MB por origen; volúmenes grandes de ventas pueden llenarlo.
-- No hay tests automatizados.
-- Login no valida contraseñas reales; cualquier credencial conocida del mock funciona.
+- La integración con Supabase es parcial; las migraciones locales no garantizan que el esquema remoto esté al día.
+- La consulta remota del historial de ventas está limitada a 500 registros; reportes con períodos mayores necesitan paginación.
+- El modo demo persiste en `localStorage` y no sincroniza datos entre dispositivos.
+- Hay pruebas automatizadas unitarias, pero faltan pruebas integrales contra Supabase con roles reales.
+- Los respaldos y una restauración de prueba siguen siendo prerrequisitos de producción.

@@ -4,6 +4,9 @@ import { useExchangeRate } from '../lib/exchange-rate';
 import { useDebts, type DebtItem } from '../lib/debts-context';
 import { useSalesHistory } from '../lib/sales-history';
 import { getRateForDate, useRateHistory } from '../lib/rate-history';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { buildCreditAlerts } from '../lib/credit-alerts';
+import { useSettings } from '../lib/settings-context';
 
 // ─── Types / Helpers ──────────────────────────────────────────────────────────
 
@@ -26,14 +29,6 @@ function getDaysSince(fecha?: string): number {
   return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function getStatus(debt: DebtItem): DebtStatus {
-  if (debt.deuda_total <= 0) return 'saldada';
-  const days = getDaysSince(debt.ultima_compra);
-  if (days > 30) return 'vencida';
-  if (days >= 20) return 'por_vencer';
-  return 'al_dia';
-}
-
 const STATUS_LABEL: Record<DebtStatus, string> = {
   al_dia: 'Al día', por_vencer: 'Por vencer', vencida: 'Vencida', saldada: 'Saldada',
 };
@@ -45,7 +40,7 @@ const STATUS_CLASS: Record<DebtStatus, string> = {
 };
 
 const emptyClient = { nombre: '', telefono: '', cedula: '', limite_credito: '3000' };
-const emptyAbono = { monto: '', nota: '' };
+const emptyAbono = { monto: '', nota: '', method: 'EFECTIVO_BS', reference: '', bank: '' };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -81,11 +76,12 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
 
 export function Debts() {
   const { rate } = useExchangeRate();
-  const { debts, addClient, addAbono } = useDebts();
+  const { debts, isLoading, error, refreshDebts, addClient, addAbono } = useDebts();
   const { sales } = useSalesHistory();
   const { history } = useRateHistory();
+  const { settings } = useSettings();
 
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
   const [filterStatus, setFilterStatus] = useState<DebtStatus | 'all'>('all');
   const [query, setQuery] = useState('');
 
@@ -94,50 +90,95 @@ export function Debts() {
 
   const [clientForm, setClientForm] = useState(emptyClient);
   const [abonoForm, setAbonoForm] = useState(emptyAbono);
+  const [selectedNoteId, setSelectedNoteId] = useState('');
   const [formErr, setFormErr] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
-  const filtered = useMemo(() =>
-    debts.filter((d) => {
-      const matchQuery = !query.trim() || d.nombre.toLowerCase().includes(query.toLowerCase()) || (d.telefono ?? '').includes(query);
-      const matchStatus = filterStatus === 'all' || getStatus(d) === filterStatus;
-      return matchQuery && matchStatus;
-    }), [debts, query, filterStatus]);
 
   const selected = useMemo(() => debts.find((d) => d.id === selectedId) ?? null, [debts, selectedId]);
 
   const totalDeuda = useMemo(() => debts.reduce((a, d) => a + d.deuda_total, 0), [debts]);
-  const vencidas = useMemo(() => debts.filter((d) => getStatus(d) === 'vencida').length, [debts]);
-  const porVencer = useMemo(() => debts.filter((d) => getStatus(d) === 'por_vencer').length, [debts]);
+  const creditAlerts = useMemo(
+    () => buildCreditAlerts(debts, settings.dias_alerta_morosidad),
+    [debts, settings.dias_alerta_morosidad],
+  );
+  const statusByCustomer = useMemo(() => {
+    const severity = { al_dia: 0, por_vencer: 1, vencida: 2 } as const;
+    const statuses = new Map<string | number, DebtStatus>();
+    for (const debt of debts) statuses.set(debt.id, debt.deuda_total <= 0 ? 'saldada' : 'al_dia');
+    for (const alert of creditAlerts) {
+      const previous = statuses.get(alert.customerId) ?? 'al_dia';
+      if (previous !== 'saldada' && severity[alert.status] > severity[previous]) {
+        statuses.set(alert.customerId, alert.status);
+      }
+    }
+    return statuses;
+  }, [creditAlerts, debts]);
+  const getStatus = (debt: DebtItem) => statusByCustomer.get(debt.id) ?? 'saldada';
+  const filtered = useMemo(() =>
+    debts.filter((d) => {
+      const matchQuery = !query.trim() || d.nombre.toLowerCase().includes(query.toLowerCase()) || (d.telefono ?? '').includes(query);
+      const matchStatus = filterStatus === 'all' || (statusByCustomer.get(d.id) ?? 'saldada') === filterStatus;
+      return matchQuery && matchStatus;
+    }), [debts, query, filterStatus, statusByCustomer]);
+  const vencidas = creditAlerts.filter((alert) => alert.status === 'vencida').length;
+  const porVencer = creditAlerts.filter((alert) => alert.status === 'por_vencer').length;
 
   const getRateByDate = (isoDate?: string) => {
     if (!isoDate) return rate;
     return getRateForDate(history, isoDate, rate);
   };
 
-  function handleSaveClient() {
+  async function handleSaveClient() {
     setFormErr('');
     if (!clientForm.nombre.trim()) { setFormErr('El nombre es obligatorio.'); return; }
     const limite = Number(clientForm.limite_credito);
     if (isNaN(limite) || limite <= 0) { setFormErr('Ingresa un límite de crédito válido.'); return; }
     setIsSaving(true);
-    addClient({ nombre: clientForm.nombre, telefono: clientForm.telefono, cedula: clientForm.cedula, limite_credito: limite });
-    setIsSaving(false);
-    setShowNewClient(false);
-    setClientForm(emptyClient);
+    try {
+      const client = await addClient({ nombre: clientForm.nombre, telefono: clientForm.telefono, cedula: clientForm.cedula, limite_credito: limite });
+      setSelectedId(client.id);
+      setShowNewClient(false);
+      setClientForm(emptyClient);
+    } catch (saveError) {
+      setFormErr(saveError instanceof Error ? saveError.message : 'No se pudo guardar el cliente.');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  function handleSaveAbono() {
+  async function handleSaveAbono() {
     setFormErr('');
     if (!selected) return;
-    const monto = Number(abonoForm.monto);
-    if (isNaN(monto) || monto <= 0) { setFormErr('Ingresa un monto válido.'); return; }
-    if (monto > selected.deuda_total) { setFormErr('El abono supera la deuda actual.'); return; }
+    const selectedNote = selected.creditNotes?.find((note) => note.id === selectedNoteId && note.balanceBs > 0);
+    if (isSupabaseConfigured && !selectedNote) { setFormErr('Selecciona una nota con saldo pendiente.'); return; }
+    const amount = Number(abonoForm.monto);
+    if (!Number.isFinite(amount) || amount <= 0) { setFormErr('Ingresa un monto válido.'); return; }
+    const amountBs = amount;
+    const currentBalance = selectedNote?.balanceBs ?? selected.deuda_total;
+    if (amountBs > currentBalance) { setFormErr('El abono supera el saldo de la nota seleccionada.'); return; }
+    const method = abonoForm.method as 'EFECTIVO_BS' | 'PAGO_MOVIL' | 'PUNTO_VENTA' | 'TRANSFERENCIA';
+    if (['PAGO_MOVIL', 'PUNTO_VENTA', 'TRANSFERENCIA'].includes(method) && !/^\d{6}$/.test(abonoForm.reference.trim())) {
+      setFormErr('La referencia debe contener exactamente 6 dígitos.');
+      return;
+    }
     setIsSaving(true);
-    addAbono(selected.id, monto, abonoForm.nota || undefined, rate);
-    setIsSaving(false);
-    setShowAbono(false);
-    setAbonoForm(emptyAbono);
+    try {
+      await addAbono(selected.id, amountBs, selectedNote?.id, abonoForm.nota || undefined, rate, {
+        method,
+        amount,
+        currency: 'BS',
+        amountBs,
+        reference: abonoForm.reference.trim() || undefined,
+        bank: abonoForm.bank.trim() || undefined,
+      });
+      setShowAbono(false);
+      setAbonoForm(emptyAbono);
+      setSelectedNoteId('');
+    } catch (saveError) {
+      setFormErr(saveError instanceof Error ? saveError.message : 'No se pudo registrar el abono.');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -146,13 +187,22 @@ export function Debts() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Módulo de Deudas</h2>
-          <p className="text-sm text-slate-500">Control de ventas fiadas y abonos por cliente.</p>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Módulo de Nota de Crédito</h2>
+          <p className="text-sm text-slate-500">Control de ventas con nota de crédito y abonos por cliente.</p>
         </div>
         <Button variant="primary" onPress={() => { setFormErr(''); setShowNewClient(true); }}>
           + Nuevo cliente
         </Button>
       </div>
+
+      {error && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
+          <p>{error}</p>
+          <Button size="sm" variant="secondary" onPress={() => void refreshDebts()}>Reintentar</Button>
+        </div>
+      )}
+
+      {isLoading && <p className="text-sm text-slate-500" role="status">Cargando cartera de crédito...</p>}
 
       {debts.length === 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
@@ -300,8 +350,12 @@ export function Debts() {
                   <div className="flex gap-2">
                     <Button
                       size="sm" variant="primary" fullWidth
-                      isDisabled={selected.deuda_total <= 0}
-                      onPress={() => { setFormErr(''); setShowAbono(true); }}
+                      isDisabled={selected.deuda_total <= 0 || (isSupabaseConfigured && !(selected.creditNotes?.some((note) => note.balanceBs > 0)))}
+                      onPress={() => {
+                        setFormErr('');
+                        setSelectedNoteId(selected.creditNotes?.find((note) => note.balanceBs > 0)?.id ?? '');
+                        setShowAbono(true);
+                      }}
                     >
                       + Registrar abono
                     </Button>
@@ -391,7 +445,7 @@ export function Debts() {
             {formErr && <p className="text-xs font-semibold text-red-500">⚠️ {formErr}</p>}
             <div className="flex gap-2 pt-2">
               <button onClick={() => setShowNewClient(false)} className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Cancelar</button>
-              <button onClick={handleSaveClient} disabled={isSaving} className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
+              <button onClick={() => void handleSaveClient()} disabled={isSaving} className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
                 {isSaving ? 'Guardando...' : 'Guardar cliente'}
               </button>
             </div>
@@ -404,12 +458,49 @@ export function Debts() {
         <Modal title={`Abono — ${selected.nombre}`} onClose={() => setShowAbono(false)}>
           <div className="space-y-3">
             <p className="text-sm text-slate-500">Deuda pendiente: <span className="font-bold text-red-600">{moneyUsd(selected.deuda_total, rate)} ({moneyBs(selected.deuda_total)})</span></p>
+            {isSupabaseConfigured && (
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">Nota de crédito</label>
+                <select
+                  value={selectedNoteId}
+                  onChange={(event) => setSelectedNoteId(event.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                  {(selected.creditNotes ?? []).filter((note) => note.balanceBs > 0).map((note) => (
+                    <option key={note.id} value={note.id}>{note.code} — saldo {moneyBs(note.balanceBs)}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {isSupabaseConfigured && (
+              <>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  Método de pago
+                  <select
+                    value={abonoForm.method}
+                    onChange={(event) => setAbonoForm((previous) => ({ ...previous, method: event.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    <option value="EFECTIVO_BS">Efectivo Bs</option>
+                    <option value="PAGO_MOVIL">Pago móvil</option>
+                    <option value="PUNTO_VENTA">Punto de venta</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                  </select>
+                </label>
+                {['PAGO_MOVIL', 'PUNTO_VENTA', 'TRANSFERENCIA'].includes(abonoForm.method) && (
+                  <>
+                    <Field label="Referencia (6 dígitos) *" value={abonoForm.reference} onChange={(v) => setAbonoForm((p) => ({ ...p, reference: v.replace(/\D/g, '').slice(0, 6) }))} placeholder="123456" />
+                    <Field label="Banco" value={abonoForm.bank} onChange={(v) => setAbonoForm((p) => ({ ...p, bank: v }))} placeholder="Banco emisor" />
+                  </>
+                )}
+              </>
+            )}
             <Field label="Monto del abono (Bs) *" type="number" value={abonoForm.monto} onChange={(v) => setAbonoForm((p) => ({ ...p, monto: v }))} placeholder="0.00" />
             <Field label="Nota" value={abonoForm.nota} onChange={(v) => setAbonoForm((p) => ({ ...p, nota: v }))} placeholder="Opcional" />
             {formErr && <p className="text-xs font-semibold text-red-500">⚠️ {formErr}</p>}
             <div className="flex gap-2 pt-2">
               <button onClick={() => setShowAbono(false)} className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Cancelar</button>
-              <button onClick={handleSaveAbono} disabled={isSaving} className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
+              <button onClick={() => void handleSaveAbono()} disabled={isSaving} className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
                 {isSaving ? 'Guardando...' : 'Registrar abono'}
               </button>
             </div>

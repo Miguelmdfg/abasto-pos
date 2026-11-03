@@ -10,7 +10,7 @@
 >
 > - **Roles:** este documento usa "Vendedor"/"Dueño". El código usa los identificadores `cajero` y `dueno` (ver `frontend/src/lib/auth.tsx`). "Vendedor" y "cajero" se refieren al mismo rol.
 > - **Acceso al POS:** el documento dice que el dueño NO accede al POS. En la implementación actual, el rol `dueno` sí tiene acceso a `/pos` (decisión deliberada para permitir reemplazo del cajero).
-> - **Backend/BD:** la sección 5 describe arquitectura objetivo. Hoy no hay backend; todo persiste en `localStorage`.
+> - **Backend/BD:** la sección 5 describe la arquitectura objetivo. El frontend actual ya conecta Supabase Auth, catálogo, ventas transaccionales y turnos; otros módulos aún dependen de migraciones remotas pendientes. `localStorage` queda para preferencias y modo demo. Ver [`01-estado-implementacion.md`](01-estado-implementacion.md).
 > - **Terminología "Notas de Crédito":** lo que aquí y en código se llama "fiado", "venta fiada" o "Módulo de Deudas" se redenomina al **dominio "Notas de Crédito"** (ver [`03-decisiones-modelo-datos.md`](03-decisiones-modelo-datos.md), MD-014). Mientras se completa el renombre se mantienen ambos términos en este documento.
 > - **Estado real por módulo:** ver [`01-estado-implementacion.md`](01-estado-implementacion.md).
 
@@ -541,7 +541,7 @@ Control de rentabilidad por producto.
 
 ---
 
-> **Nota sobre el estado actual:** lo que aparece a continuación es la **arquitectura objetivo**. La implementación vigente (rama `final-code`) solo tiene frontend, sin backend ni base de datos — la persistencia es en `localStorage`. Ver [`01-estado-implementacion.md`](01-estado-implementacion.md) para el detalle.
+> **Nota sobre el estado actual:** lo que aparece a continuación es la **arquitectura objetivo**. La implementación vigente tiene frontend React y una integración parcial con Supabase; no todos los módulos ni todas las migraciones locales están desplegados. `localStorage` se reserva para preferencias y modo demo. Ver [`01-estado-implementacion.md`](01-estado-implementacion.md) y [`05-pendientes-auditoria.md`](05-pendientes-auditoria.md) para el estado revisado.
 
 ### 5.1 Frontend
 

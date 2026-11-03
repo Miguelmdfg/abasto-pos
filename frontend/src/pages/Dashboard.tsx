@@ -1,9 +1,14 @@
 import { Card, Dropdown } from '@heroui/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../lib/i18n';
 import { useExchangeRate } from '../lib/exchange-rate';
 import { useSalesHistory } from '../lib/sales-history';
-import { DEMO_SALES } from '../mocks/demo-data';
+import { loadCatalogProducts, type CatalogProduct } from '../lib/catalog';
+import { useSettings } from '../lib/settings-context';
+import { useDebts } from '../lib/debts-context';
+import { buildCreditAlerts } from '../lib/credit-alerts';
+import { Reports } from './Reports';
 
 type DashboardRange = 'today' | 'last7' | 'custom';
 
@@ -66,17 +71,44 @@ function HourlyChart({ data }: { data: { label: string; value: number }[] }) {
 
 export function Dashboard() {
   const { t } = useI18n();
-  const { sales: liveSales } = useSalesHistory();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const activeView = searchParams.get('view') === 'reports' ? 'reports' : 'overview';
+  const { sales: liveSales, refreshError: salesError, refreshSales } = useSalesHistory();
   const { rate } = useExchangeRate();
+  const { settings } = useSettings();
+  const { debts, error: debtsError, refreshDebts } = useDebts();
   const [range, setRange] = useState<DashboardRange>('last7');
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
 
-  // Combina ventas reales + demo (demo primero si no hay reales)
-  const allSales = useMemo(() => {
-    const combined = [...liveSales, ...DEMO_SALES];
-    // Deduplica por id
-    const seen = new Set<string>();
-    return combined.filter(s => { if (seen.has(s.id)) return false; seen.add(s.id); return true; });
-  }, [liveSales]);
+  const allSales = liveSales;
+
+  useEffect(() => {
+    let mounted = true;
+    loadCatalogProducts()
+      .then((catalog) => {
+        if (mounted) {
+          setProducts(catalog);
+          setCatalogError(null);
+        }
+      })
+      .catch(() => {
+        if (mounted) setCatalogError('No se pudo cargar el inventario para comprobar alertas de stock.');
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const lowStockProducts = useMemo(
+    () => products.filter((product) => product.stock <= settings.stock_minimo_global)
+      .sort((a, b) => a.stock - b.stock),
+    [products, settings.stock_minimo_global],
+  );
+  const creditAlerts = useMemo(
+    () => buildCreditAlerts(debts, settings.dias_alerta_morosidad),
+    [debts, settings.dias_alerta_morosidad],
+  );
+  const overdueCreditAlerts = creditAlerts.filter((alert) => alert.status === 'vencida');
 
   // Filtra por rango
   const filteredSales = useMemo(() => {
@@ -124,27 +156,31 @@ export function Dashboard() {
       const h = new Date(s.fecha).getHours();
       if (buckets[h] !== undefined) buckets[h] += s.total;
     });
-    // Si no hay datos reales, simula una curva típica de tienda
-    const hasData = Object.values(buckets).some(v => v > 0);
-    if (!hasData) {
-      const curve = [120, 180, 350, 620, 890, 1100, 980, 750, 680, 920, 1050, 870, 540, 280];
-      hours.forEach((h, i) => { buckets[h] = curve[i]; });
-    }
     return hours.map(h => ({ label: `${h}:00`, value: buckets[h] }));
   }, [filteredSales]);
 
   // Métodos de pago
   const paymentBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
-    filteredSales.forEach(s => { map[s.metodo] = (map[s.metodo] ?? 0) + s.total; });
+    filteredSales.forEach((sale) => {
+      if (sale.payments?.length) {
+        sale.payments.forEach((payment) => {
+          map[payment.method] = (map[payment.method] ?? 0) + payment.amountBs;
+        });
+      } else {
+        map[sale.metodo] = (map[sale.metodo] ?? 0) + sale.total;
+      }
+    });
     const total = Object.values(map).reduce((a, b) => a + b, 0) || 1;
     const colors: Record<string, string> = {
       pagomovil: 'bg-blue-500', efectivo_bs: 'bg-green-500', efectivo_usd: 'bg-emerald-500',
-      tarjeta: 'bg-purple-500', punto_venta: 'bg-indigo-500', mixto: 'bg-orange-500', fiado: 'bg-red-400',
+      pago_movil: 'bg-blue-500', tarjeta: 'bg-purple-500', punto_venta: 'bg-indigo-500',
+      transferencia: 'bg-cyan-500', mixto: 'bg-orange-500', fiado: 'bg-red-400', nota_credito: 'bg-red-400',
     };
     const labels: Record<string, string> = {
       pagomovil: 'Pago Móvil', efectivo_bs: 'Efectivo Bs', efectivo_usd: 'Efectivo USD',
-      tarjeta: 'Tarjeta', punto_venta: 'Punto Venta', mixto: 'Mixto', fiado: 'Fiado',
+      pago_movil: 'Pago Móvil', tarjeta: 'Tarjeta', punto_venta: 'Punto Venta',
+      transferencia: 'Transferencia', mixto: 'Mixto', fiado: 'Nota de crédito', nota_credito: 'Nota de crédito',
     };
     return Object.entries(map)
       .sort((a, b) => b[1] - a[1])
@@ -178,7 +214,30 @@ export function Dashboard() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-5">
+    <div>
+      <nav className="mx-4 mt-4 flex gap-2 border-b border-slate-200 dark:border-slate-800 md:mx-6" role="tablist" aria-label="Secciones de analíticas">
+        {([
+          { key: 'overview', label: 'Inicio' },
+          { key: 'reports', label: 'Reportes detallados' },
+        ] as const).map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={activeView === key}
+            onClick={() => navigate(key === 'overview' ? '/' : '/?view=reports')}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold transition-colors ${
+              activeView === key
+                ? 'border-primary text-primary'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      {activeView === 'reports' ? <Reports /> : (
+      <div className="p-4 md:p-6 space-y-5">
 
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -209,6 +268,51 @@ export function Dashboard() {
           </Dropdown.Popover>
         </Dropdown>
       </div>
+
+      {salesError && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
+          <p>{salesError} Los indicadores de ventas pueden estar incompletos.</p>
+          <button type="button" onClick={() => void refreshSales()} className="rounded-lg border border-amber-500 px-3 py-1.5 font-semibold">Reintentar</button>
+        </div>
+      )}
+
+      {catalogError ? (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
+          {catalogError}
+        </div>
+      ) : lowStockProducts.length > 0 && (
+        <Card className="border border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
+          <Card.Content className="p-4">
+            <h3 className="font-bold text-amber-900 dark:text-amber-200">Alertas de inventario bajo ({lowStockProducts.length})</h3>
+            <ul className="mt-2 grid gap-1 text-sm text-amber-800 dark:text-amber-300 sm:grid-cols-2 lg:grid-cols-3">
+              {lowStockProducts.slice(0, 9).map((product) => (
+                <li key={product.id}>{product.name}: {product.stock} unidades</li>
+              ))}
+            </ul>
+            {lowStockProducts.length > 9 && <p className="mt-2 text-xs text-amber-800 dark:text-amber-300">Y {lowStockProducts.length - 9} productos más.</p>}
+          </Card.Content>
+        </Card>
+      )}
+
+      {debtsError ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
+          <p>{debtsError} Las alertas de morosidad pueden estar incompletas.</p>
+          <button type="button" onClick={() => void refreshDebts()} className="font-semibold underline">Reintentar</button>
+        </div>
+      ) : overdueCreditAlerts.length > 0 && (
+        <Card className="border border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/30">
+          <Card.Content className="p-4">
+            <h3 className="font-bold text-red-800 dark:text-red-300">Crédito vencido ({overdueCreditAlerts.length})</h3>
+            <ul className="mt-2 grid gap-1 text-sm text-red-700 dark:text-red-300 sm:grid-cols-2 lg:grid-cols-3">
+              {overdueCreditAlerts.slice(0, 9).map((alert) => (
+                <li key={`${alert.customerId}-${alert.noteCode ?? 'local'}`}>
+                  {alert.customerName}{alert.noteCode ? ` (${alert.noteCode})` : ''}: {alert.daysOutstanding} días · {moneyBs(alert.balanceBs)}
+                </li>
+              ))}
+            </ul>
+          </Card.Content>
+        </Card>
+      )}
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -347,6 +451,8 @@ export function Dashboard() {
         </Card.Content>
       </Card>
 
+      </div>
+      )}
     </div>
   );
 }

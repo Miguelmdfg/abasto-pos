@@ -2,69 +2,103 @@ import { Button, Card, Input, Label, TextField } from '@heroui/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { type AuthUser, useAuth } from '../lib/auth';
+import { supabase } from '../lib/supabase';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const DEMO_AUTH_ENABLED = import.meta.env.DEV && import.meta.env.VITE_DEMO_AUTH === 'true';
 
 export function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginDemo } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   const localUsers: Array<AuthUser & { password: string }> = [
-    { id: 1, name: 'Dueño', email: 'dueno@abasto.local', password: '123456', role: 'dueno' },
-    { id: 2, name: 'Cajero', email: 'cajero@abasto.local', password: '123456', role: 'cajero' },
+    { id: 'demo-owner', name: 'Dueño', email: 'dueno@abasto.local', password: '123456', role: 'dueno' },
+    { id: 'demo-cashier', name: 'Cajero', email: 'cajero@abasto.local', password: '123456', role: 'cajero' },
   ];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setInfo('');
     if (!email.trim() || !password) {
       setError('Ingresa email y contraseña');
       return;
     }
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
+      const authError = await login(email.trim(), password);
+      if (!authError) {
+        navigate('/pos', { replace: true });
+        return;
+      }
+
+      if (DEMO_AUTH_ENABLED) {
         const local = localUsers.find(
           (candidate) =>
             candidate.email.toLowerCase() === email.trim().toLowerCase() && candidate.password === password,
         );
-        if (!local) {
-          setError(data.error ?? 'Error al iniciar sesión');
+        if (local) {
+          loginDemo({ id: local.id, name: local.name, email: local.email, role: local.role });
+          navigate('/pos', { replace: true });
           return;
         }
-        login({ id: local.id, name: local.name, email: local.email, role: local.role });
-        navigate('/pos', { replace: true });
-        return;
       }
-      if (data.ok && data.user) {
-        login(data.user as AuthUser);
-        navigate('/pos', { replace: true });
-        return;
-      }
-      setError('Error al iniciar sesión');
+
+      setError(authError);
     } catch {
-      const local = localUsers.find(
-        (candidate) =>
-          candidate.email.toLowerCase() === email.trim().toLowerCase() && candidate.password === password,
-      );
-      if (!local) {
-        setError('No se pudo conectar con el servidor');
-        return;
+      if (DEMO_AUTH_ENABLED) {
+        const local = localUsers.find(
+          (candidate) =>
+            candidate.email.toLowerCase() === email.trim().toLowerCase() && candidate.password === password,
+        );
+        if (local) {
+          loginDemo({ id: local.id, name: local.name, email: local.email, role: local.role });
+          navigate('/pos', { replace: true });
+          return;
+        }
       }
-      login({ id: local.id, name: local.name, email: local.email, role: local.role });
-      navigate('/pos', { replace: true });
+      setError('No se pudo iniciar sesión. Verifica la configuración de autenticación.');
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    const trimmedEmail = email.trim();
+    setError('');
+    setInfo('');
+
+    if (!trimmedEmail) {
+      setError('Escribe tu email para recuperar la contraseña.');
+      return;
+    }
+
+    if (!supabase) {
+      setError('La autenticación real no está disponible en este entorno.');
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+        redirectTo: new URL('/reset-password', window.location.origin).toString(),
+      });
+
+      if (resetError) {
+        setError(resetError.message);
+        return;
+      }
+
+      setInfo('Revisa tu correo. Te enviamos un enlace para restablecer la contraseña.');
+    } catch (resetError) {
+      setError(resetError instanceof Error ? resetError.message : 'No se pudo enviar el enlace de recuperación.');
+    } finally {
+      setIsSendingReset(false);
     }
   }
 
@@ -107,12 +141,34 @@ export function Login() {
                 {error}
               </p>
             )}
+            {info && (
+              <p className="text-small text-success-600" role="status">
+                {info}
+              </p>
+            )}
             <Button type="submit" variant="primary" isDisabled={isLoading} fullWidth>
               {isLoading ? 'Entrando…' : 'Entrar'}
             </Button>
-            <p className="text-center text-xs text-slate-500">
-              Demo: `dueno@abasto.local` / `123456` o `cajero@abasto.local` / `123456`
-            </p>
+            <Button
+              type="button"
+              variant="outline"
+              isDisabled={isSendingReset || isLoading}
+              fullWidth
+              onPress={handleForgotPassword}
+            >
+              {isSendingReset ? 'Enviando…' : '¿Olvidaste tu contraseña?'}
+            </Button>
+            {DEMO_AUTH_ENABLED && (
+              <p className="text-center text-xs text-slate-500">
+                Demo local: dueno@abasto.local / 123456 o cajero@abasto.local / 123456
+              </p>
+            )}
+
+            {!DEMO_AUTH_ENABLED && (
+              <p className="text-center text-xs text-slate-500">
+                Autenticación real activa. Usa tus credenciales de Supabase.
+              </p>
+            )}
           </form>
         </Card.Content>
       </Card>

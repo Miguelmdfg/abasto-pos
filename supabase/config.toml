@@ -1,0 +1,5 @@
+[functions.bcv-rate-sync]
+verify_jwt = false
+
+[functions.invite-user]
+verify_jwt = false

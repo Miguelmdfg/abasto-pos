@@ -1,6 +1,5 @@
 import { Button, Card } from '@heroui/react';
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import { useCashierShift, type CashierShift } from '../lib/cashier-shift';
 
 const PAGE_SIZE = 10;
@@ -111,14 +110,15 @@ function DetailModal({ record, onClose }: { record: CashierShift; onClose: () =>
   );
 }
 
-export function CashClosures() {
-  const navigate = useNavigate();
-  const { shifts } = useCashierShift();
+export function CashClosures({ embedded = false }: { embedded?: boolean }) {
+  const { shifts, shiftsError, refreshShifts } = useCashierShift();
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
   const [estado, setEstado] = useState<'all' | CashierShift['estadoCuadre']>('all');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<CashierShift | null>(null);
+
+  useEffect(() => { void refreshShifts(); }, [refreshShifts]);
 
   const filtered = useMemo(() => {
     return shifts.filter((record) => {
@@ -143,14 +143,20 @@ export function CashClosures() {
   return (
     <>
       {selected && <DetailModal record={selected} onClose={() => setSelected(null)} />}
-      <div className="space-y-5 p-4 md:p-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className={`space-y-5 ${embedded ? '' : 'p-4 md:p-6'}`}>
+        {!embedded && <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Historial de Cierres de Caja</h2>
             <p className="text-sm text-slate-500">Consulta cierres diarios, parciales, diferencia de cuadre y distribución.</p>
           </div>
-          <Button variant="ghost" onPress={() => navigate('/pos')}>← Volver al POS</Button>
-        </div>
+        </div>}
+
+        {shiftsError && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
+            <p>{shiftsError} Los cierres mostrados pueden estar incompletos.</p>
+            <Button size="sm" variant="secondary" onPress={() => void refreshShifts()}>Reintentar</Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">

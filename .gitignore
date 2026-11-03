@@ -1,2 +1,10 @@
 .claude
 node_modules
+.env
+.env.*
+!.env.example
+!.env.local.example
+dist
+coverage
+*.log
+.DS_Store

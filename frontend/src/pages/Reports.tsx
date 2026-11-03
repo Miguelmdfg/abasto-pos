@@ -1,37 +1,22 @@
-import { Card, Spinner } from '@heroui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { Card } from '@heroui/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useExchangeRate } from '../lib/exchange-rate';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+import { useSalesHistory } from '../lib/sales-history';
+import { loadCatalogProducts, type CatalogProduct } from '../lib/catalog';
+import { buildSalesCsv } from '../lib/sales-export';
+import { useCashierShift } from '../lib/cashier-shift';
+import { buildCashClosuresCsv } from '../lib/cash-closure-export';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Sale = {
-  id: number;
-  fecha?: string;
-  metodo?: string;
-  total?: number;
-  productos?: SaleItem[] | string;
-  referencia?: string;
-  banco?: string;
-  monto_efectivo?: number;
-  moneda_efectivo?: 'bs' | 'usd';
-};
-
 type SaleItem = {
-  id?: number;
+  id?: string | number;
   name?: string;
   qty?: number;
   quantity?: number;
 };
 
-type Product = {
-  id: number;
-  name?: string;
-  price?: number;
-};
-
-type Tab = 'resumen' | 'pagomovil';
+type Tab = 'resumen' | 'pagomovil' | 'cierres';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,73 +52,60 @@ function parseSaleItems(raw?: SaleItem[] | string): SaleItem[] {
 
 const METODO_LABEL: Record<string, string> = {
   efectivo: 'Efectivo',
+  efectivo_bs: 'Efectivo Bs',
+  efectivo_usd: 'Efectivo USD',
   tarjeta: 'Tarjeta',
   transferencia: 'Transferencia',
   pagomovil: 'Pago Móvil',
+  pago_movil: 'Pago Móvil',
+  punto_venta: 'Punto de venta',
+  nota_credito: 'Nota de crédito',
   mixto: 'Mixto',
 };
-
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_SALES: Sale[] = [
-  { id: 1, fecha: new Date(Date.now() - 3600000).toISOString(), metodo: 'efectivo', total: 450, productos: [{ id: 1, name: 'Arroz 1kg', qty: 3 }, { id: 2, name: 'Aceite 1L', qty: 2 }] },
-  { id: 2, fecha: new Date(Date.now() - 7200000).toISOString(), metodo: 'pagomovil', total: 1200, referencia: '123456', banco: 'Banesco', productos: [{ id: 3, name: 'Harina PAN', qty: 5 }] },
-  { id: 3, fecha: new Date(Date.now() - 86400000).toISOString(), metodo: 'tarjeta', total: 800, productos: [{ id: 4, name: 'Leche 1L', qty: 4 }] },
-  { id: 4, fecha: new Date(Date.now() - 172800000).toISOString(), metodo: 'mixto', total: 2000, referencia: '654321', banco: 'Mercantil', monto_efectivo: 500, moneda_efectivo: 'bs', productos: [{ id: 5, name: 'Pasta 500g', qty: 6 }, { id: 1, name: 'Arroz 1kg', qty: 2 }] },
-  { id: 5, fecha: new Date(Date.now() - 259200000).toISOString(), metodo: 'efectivo', total: 350, productos: [{ id: 2, name: 'Aceite 1L', qty: 1 }] },
-];
-
-const MOCK_PRODUCTS: Product[] = [
-  { id: 1, name: 'Arroz 1kg', price: 90 },
-  { id: 2, name: 'Aceite 1L', price: 175 },
-  { id: 3, name: 'Harina PAN', price: 240 },
-  { id: 4, name: 'Leche 1L', price: 200 },
-  { id: 5, name: 'Pasta 500g', price: 130 },
-];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function Reports() {
   const { rate } = useExchangeRate();
+  const { sales, refreshError, refreshSales } = useSalesHistory();
+  const { shifts, shiftsError, refreshShifts } = useCashierShift();
   const [tab, setTab] = useState<Tab>('resumen');
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isFallback, setIsFallback] = useState(false);
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [catalogError, setCatalogError] = useState('');
   const [filterMetodo, setFilterMetodo] = useState<string>('all');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
-  useEffect(() => { void loadData(); }, []);
-
-  async function loadData() {
-    setIsLoading(true);
+  const refreshProducts = useCallback(async () => {
     try {
-      const [salesRes, productsRes] = await Promise.all([
-        fetch(`${API_BASE}/sales`),
-        fetch(`${API_BASE}/products`),
-      ]);
-      if (!salesRes.ok || !productsRes.ok) throw new Error('api');
-      const salesData = (await salesRes.json()) as Sale[];
-      const productsData = (await productsRes.json()) as Product[];
-      setSales(Array.isArray(salesData) ? salesData : MOCK_SALES);
-      setProducts(Array.isArray(productsData) ? productsData : MOCK_PRODUCTS);
-      setIsFallback(false);
+      setProducts(await loadCatalogProducts());
+      setCatalogError('');
     } catch {
-      setSales(MOCK_SALES);
-      setProducts(MOCK_PRODUCTS);
-      setIsFallback(true);
-    } finally {
-      setIsLoading(false);
+      setCatalogError('No se pudo cargar el catálogo. Los nombres de productos podrían no estar disponibles.');
     }
-  }
+  }, []);
 
-  const totalGanancias = useMemo(() => sales.reduce((acc, s) => acc + (s.total ?? 0), 0), [sales]);
-  const pagoMovilSales = useMemo(() => sales.filter((s) => s.metodo === 'pagomovil' || s.metodo === 'mixto'), [sales]);
+  useEffect(() => { void refreshProducts(); }, [refreshProducts]);
+  useEffect(() => { void refreshShifts(); }, [refreshShifts]);
+
+  const periodSales = useMemo(() => sales.filter((sale) => {
+    const timestamp = new Date(sale.fecha).getTime();
+    if (!Number.isFinite(timestamp)) return false;
+    const day = new Date(timestamp).toISOString().slice(0, 10);
+    return (!fechaDesde || day >= fechaDesde) && (!fechaHasta || day <= fechaHasta);
+  }), [fechaDesde, fechaHasta, sales]);
+
+  const totalSales = useMemo(() => periodSales.reduce((acc, s) => acc + (s.total ?? 0), 0), [periodSales]);
+  const pagoMovilSales = useMemo(
+    () => periodSales.filter((sale) => sale.payments?.some((payment) => payment.method === 'pago_movil') || sale.metodo === 'pagomovil' || sale.metodo === 'mixto'),
+    [periodSales],
+  );
 
   const topProducts = useMemo(() => {
-    const counter: Record<number, { name: string; qty: number }> = {};
-    for (const sale of sales) {
+    const counter: Record<string, { name: string; qty: number }> = {};
+    for (const sale of periodSales) {
       for (const item of parseSaleItems(sale.productos)) {
-        const pid = item.id ?? 0;
+        const pid = String(item.id ?? 0);
         const qty = item.qty ?? item.quantity ?? 0;
         const name = item.name ?? products.find((p) => p.id === pid)?.name ?? `#${pid}`;
         if (!counter[pid]) counter[pid] = { name, qty: 0 };
@@ -141,33 +113,60 @@ export function Reports() {
       }
     }
     return Object.values(counter).sort((a, b) => b.qty - a.qty).slice(0, 5);
-  }, [sales, products]);
+  }, [periodSales, products]);
 
   const maxQty = topProducts[0]?.qty ?? 1;
 
   const paymentBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const sale of sales) {
-      const key = sale.metodo ?? 'otro';
-      map[key] = (map[key] ?? 0) + (sale.total ?? 0);
+    for (const sale of periodSales) {
+      if (sale.payments?.length) {
+        for (const payment of sale.payments) {
+          map[payment.method] = (map[payment.method] ?? 0) + payment.amountBs;
+        }
+      } else {
+        map[sale.metodo ?? 'otro'] = (map[sale.metodo ?? 'otro'] ?? 0) + (sale.total ?? 0);
+      }
     }
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
-  }, [sales]);
+  }, [periodSales]);
 
   const filteredSales = useMemo(() => {
-    if (filterMetodo === 'all') return sales;
-    return sales.filter((s) => s.metodo === filterMetodo);
-  }, [sales, filterMetodo]);
+    if (filterMetodo === 'all') return periodSales;
+    return periodSales.filter((sale) => sale.payments?.length
+      ? sale.payments.some((payment) => payment.method === filterMetodo)
+      : sale.metodo === filterMetodo);
+  }, [periodSales, filterMetodo]);
 
-  const metodos = useMemo(() => Array.from(new Set(sales.map((s) => s.metodo ?? 'otro'))), [sales]);
+  const metodos = useMemo(
+    () => Array.from(new Set(periodSales.flatMap((sale) => sale.payments?.length ? sale.payments.map((payment) => payment.method) : [sale.metodo ?? 'otro']))),
+    [periodSales],
+  );
+  const filteredShifts = useMemo(() => shifts.filter((shift) => {
+    const timestamp = new Date(shift.fecha).getTime();
+    if (!Number.isFinite(timestamp)) return false;
+    const day = new Date(timestamp).toISOString().slice(0, 10);
+    return (!fechaDesde || day >= fechaDesde) && (!fechaHasta || day <= fechaHasta);
+  }), [fechaDesde, fechaHasta, shifts]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center gap-3">
-        <Spinner size="sm" />
-        <p className="text-sm text-slate-500">Cargando reportes...</p>
-      </div>
-    );
+  function exportSales() {
+    const blob = new Blob([buildSalesCsv(filteredSales)], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `abasto-ventas-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportClosures() {
+    const blob = new Blob([buildCashClosuresCsv(filteredShifts)], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `abasto-cierres-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -178,17 +177,35 @@ export function Reports() {
         <p className="text-sm text-slate-500">Historial de ventas, ganancias, productos y pagos móviles.</p>
       </div>
 
-      {isFallback && (
-        <Card className="border border-warning/40 bg-warning/5">
-          <Card.Content className="p-3 text-xs font-semibold text-warning">
-            Mostrando datos de demostración porque la API no está disponible.
-          </Card.Content>
-        </Card>
+      {(refreshError || catalogError || (tab === 'cierres' && shiftsError)) && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <span>{refreshError || catalogError}</span>
+          <div className="flex gap-2">
+            {refreshError && <button type="button" onClick={() => void refreshSales()} className="font-bold underline">Reintentar ventas</button>}
+            {catalogError && <button type="button" onClick={() => void refreshProducts()} className="font-bold underline">Reintentar catálogo</button>}
+            {tab === 'cierres' && shiftsError && <button type="button" onClick={() => void refreshShifts()} className="font-bold underline">Reintentar cierres</button>}
+          </div>
+        </div>
       )}
 
+      <Card className="w-fit max-w-full border border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
+        <Card.Content className="flex flex-row flex-wrap items-end justify-start gap-3 p-3">
+          <label className="flex flex-col gap-1 text-xs font-semibold text-slate-500">
+            Desde
+            <input type="date" value={fechaDesde} max={fechaHasta || undefined} onChange={(event) => setFechaDesde(event.target.value)} className="w-40 max-w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-slate-500">
+            Hasta
+            <input type="date" value={fechaHasta} min={fechaDesde || undefined} onChange={(event) => setFechaHasta(event.target.value)} className="w-40 max-w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+          </label>
+          <button type="button" onClick={exportSales} disabled={filteredSales.length === 0} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+            Exportar CSV ({filteredSales.length})
+          </button>
+        </Card.Content>
+      </Card>
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
-        {(['resumen', 'pagomovil'] as Tab[]).map((t) => (
+        {(['resumen', 'pagomovil', 'cierres'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -198,7 +215,7 @@ export function Reports() {
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
           >
-            {t === 'resumen' ? 'Resumen General' : 'Pagos Móviles'}
+            {t === 'resumen' ? 'Resumen General' : t === 'pagomovil' ? 'Pagos Móviles' : 'Cierres de caja'}
           </button>
         ))}
       </div>
@@ -209,9 +226,9 @@ export function Reports() {
           {/* KPIs */}
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { label: 'Ganancias totales acumuladas', main: moneyBs(totalGanancias), sub: rate > 0 ? moneyUsd(totalGanancias / rate) : '—' },
-              { label: 'Total de ventas', main: String(sales.length), sub: 'transacciones registradas' },
-              { label: 'Pagos móviles / mixtos', main: String(pagoMovilSales.length), sub: 'transacciones con referencia' },
+              { label: 'Ventas totales', main: moneyBs(totalSales), sub: rate > 0 ? moneyUsd(totalSales / rate) : '—' },
+              { label: 'Total de ventas', main: String(periodSales.length), sub: 'transacciones registradas' },
+              { label: 'Ventas con pago móvil/mixto', main: String(pagoMovilSales.length), sub: 'transacciones registradas' },
             ].map((kpi) => (
               <Card key={kpi.label} className="border border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
                 <Card.Content className="p-4">
@@ -341,7 +358,7 @@ export function Reports() {
           {/* Placeholders */}
           <Card className="border border-dashed border-slate-300 dark:border-slate-700">
             <Card.Content className="p-6 text-center">
-              <p className="text-sm font-semibold text-slate-400">📋 Cierres de caja — disponible cuando se implemente el módulo de caja</p>
+              <p className="text-sm font-semibold text-slate-400">📋 Resumen y exportación de cierres de caja — pendiente</p>
             </Card.Content>
           </Card>
           <Card className="border border-dashed border-slate-300 dark:border-slate-700">
@@ -350,6 +367,52 @@ export function Reports() {
             </Card.Content>
           </Card>
         </div>
+      )}
+
+      {tab === 'cierres' && (
+        <Card className="border border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
+          <Card.Header className="flex flex-row items-center justify-between gap-3 px-4 pb-0 pt-4">
+            <div>
+              <Card.Title>Cierres de caja</Card.Title>
+              <p className="text-xs text-slate-500">{filteredShifts.length} cierres en el período seleccionado</p>
+            </div>
+            <button type="button" onClick={exportClosures} disabled={filteredShifts.length === 0} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+              Exportar CSV
+            </button>
+          </Card.Header>
+          <Card.Content className="p-4">
+            {filteredShifts.length === 0 ? (
+              <p className="text-sm text-slate-500">No hay cierres para mostrar.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left dark:border-slate-800">
+                      <th className="pb-2 pr-4 font-semibold text-slate-500">Código</th>
+                      <th className="pb-2 pr-4 font-semibold text-slate-500">Fecha</th>
+                      <th className="pb-2 pr-4 font-semibold text-slate-500">Cajero</th>
+                      <th className="pb-2 pr-4 text-right font-semibold text-slate-500">Ventas Bs</th>
+                      <th className="pb-2 pr-4 text-right font-semibold text-slate-500">Contado Bs</th>
+                      <th className="pb-2 text-right font-semibold text-slate-500">Diferencia</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredShifts.map((shift) => (
+                      <tr key={shift.id}>
+                        <td className="py-3 pr-4 font-mono text-xs">{shift.id}</td>
+                        <td className="py-3 pr-4 whitespace-nowrap">{fmtDate(shift.fecha)}</td>
+                        <td className="py-3 pr-4">{shift.cajero}</td>
+                        <td className="py-3 pr-4 text-right">{moneyBs(shift.totalVenta)}</td>
+                        <td className="py-3 pr-4 text-right">{moneyBs(shift.totalCaja)}</td>
+                        <td className="py-3 text-right">{moneyBs(shift.diferencia)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card.Content>
+        </Card>
       )}
 
       {/* ── TAB: PAGOS MÓVILES ── */}

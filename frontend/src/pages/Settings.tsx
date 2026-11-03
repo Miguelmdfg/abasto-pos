@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@heroui/react';
 import { useSettings, type PaymentMethodKey } from '../lib/settings-context';
 import { useExchangeRate } from '../lib/exchange-rate';
 import { useRateHistory } from '../lib/rate-history';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { useSearchParams } from 'react-router-dom';
+import { SectionTabs } from '../components/SectionTabs';
+import { UserManagement } from './UserManagement';
+import { useI18n } from '../lib/i18n';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -17,7 +22,7 @@ const METODOS_LABEL: Record<PaymentMethodKey, string> = {
   pagomovil:    'Pago Móvil',
   punto_venta:  'Punto de Venta',
   mixto:        'Pago Mixto',
-  fiado:        'Fiado (Deuda)',
+  fiado:        'Nota de crédito',
 };
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
@@ -62,14 +67,16 @@ function TextInput({
   );
 }
 
-function SaveBtn({ onClick, saved }: { onClick: () => void; saved: boolean }) {
+function SaveBtn({ onClick, saved, disabled }: { onClick: () => void | Promise<void>; saved: boolean; disabled?: boolean }) {
   return (
     <div className="flex items-center gap-3 pt-2">
       <button
+        type="button"
         onClick={onClick}
+        disabled={disabled}
         className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white hover:opacity-90 transition-opacity"
       >
-        Guardar cambios
+        {disabled ? 'Guardando...' : 'Guardar cambios'}
       </button>
       {saved && <span className="text-sm font-semibold text-green-600">✅ Guardado</span>}
     </div>
@@ -79,8 +86,11 @@ function SaveBtn({ onClick, saved }: { onClick: () => void; saved: boolean }) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function Settings() {
-  const { settings, updateSettings, resetSettings } = useSettings();
-  const { rate, setRate } = useExchangeRate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useI18n();
+  const activeTab = searchParams.get('tab') === 'users' ? 'users' : 'general';
+  const { settings, updateSettings, resetSettings, isLoading, isSaving, error, refreshSettings } = useSettings();
+  const { rate, setRate, updatedAt, isStale, isLoading: isRateLoading, error: rateError, refreshRate } = useExchangeRate();
 
   // Local form states per section
   const [rateInput, setRateInput] = useState(String(rate));
@@ -113,99 +123,198 @@ export function Settings() {
   const [savedAlertas, setSavedAlertas] = useState(false);
 
   const [showReset, setShowReset] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIvaInput(String(settings.iva));
+    setNegocio({
+      nombre: settings.negocio_nombre,
+      rif: settings.negocio_rif,
+      direccion: settings.negocio_direccion,
+      telefono: settings.negocio_telefono,
+    });
+    setPagomovil({
+      banco: settings.pagomovil_banco,
+      numero: settings.pagomovil_numero,
+      cedula: settings.pagomovil_cedula,
+    });
+    setMetodos({ ...settings.metodos_habilitados });
+    setAlertas({
+      stock_minimo: String(settings.stock_minimo_global),
+      dias_morosidad: String(settings.dias_alerta_morosidad),
+      limite_deuda: String(settings.limite_deuda_global),
+    });
+  }, [settings]);
 
   // ── Save handlers ─────────────────────────────────────────────────────────
 
-  function saveTasa() {
+  async function saveTasa() {
     const r = Number(rateInput);
     const iva = Number(ivaInput);
-    if (!isNaN(r) && r > 0) setRate(r);
-    if (!isNaN(iva) && iva >= 0 && iva <= 100) updateSettings({ iva });
-    setSavedTasa(true);
-    setTimeout(() => setSavedTasa(false), 3000);
+    if (isSupabaseConfigured && (isNaN(iva) || iva < 0 || iva > 100)) {
+      setSaveError('El IVA debe ser un número entre 0 y 100.');
+      return;
+    }
+    if (!isSupabaseConfigured && (!Number.isFinite(r) || r <= 0 || !Number.isFinite(iva) || iva < 0 || iva > 100)) {
+      setSaveError('Ingresa una tasa mayor que cero y un IVA entre 0 y 100.');
+      return;
+    }
+    setSaveError(null);
+    try {
+      await updateSettings({ iva });
+      if (!isSupabaseConfigured) setRate(r);
+      setSavedTasa(true);
+      setTimeout(() => setSavedTasa(false), 3000);
+    } catch {
+      setSaveError('No se pudo guardar la configuración. Revisa el aviso y vuelve a intentarlo.');
+    }
   }
 
-  function saveNegocio() {
-    updateSettings({
+  async function saveNegocio() {
+    setSaveError(null);
+    try {
+      await updateSettings({
       negocio_nombre: negocio.nombre,
       negocio_rif: negocio.rif,
       negocio_direccion: negocio.direccion,
       negocio_telefono: negocio.telefono,
-    });
-    setSavedNegocio(true);
-    setTimeout(() => setSavedNegocio(false), 3000);
+      });
+      setSavedNegocio(true);
+      setTimeout(() => setSavedNegocio(false), 3000);
+    } catch {
+      setSaveError('No se pudieron guardar los datos del negocio.');
+    }
   }
 
-  function savePagomovil() {
-    updateSettings({
+  async function savePagomovil() {
+    setSaveError(null);
+    try {
+      await updateSettings({
       pagomovil_banco: pagomovil.banco,
       pagomovil_numero: pagomovil.numero,
       pagomovil_cedula: pagomovil.cedula,
-    });
-    setSavedPagomovil(true);
-    setTimeout(() => setSavedPagomovil(false), 3000);
+      });
+      setSavedPagomovil(true);
+      setTimeout(() => setSavedPagomovil(false), 3000);
+    } catch {
+      setSaveError('No se pudieron guardar los datos de Pago Móvil.');
+    }
   }
 
-  function saveMetodos() {
-    updateSettings({ metodos_habilitados: metodos });
-    setSavedMetodos(true);
-    setTimeout(() => setSavedMetodos(false), 3000);
+  async function saveMetodos() {
+    setSaveError(null);
+    try {
+      await updateSettings({ metodos_habilitados: metodos });
+      setSavedMetodos(true);
+      setTimeout(() => setSavedMetodos(false), 3000);
+    } catch {
+      setSaveError('No se pudieron guardar los métodos de pago.');
+    }
   }
 
-  function saveAlertas() {
+  async function saveAlertas() {
     const stock = Number(alertas.stock_minimo);
     const dias = Number(alertas.dias_morosidad);
     const limite = Number(alertas.limite_deuda);
-    updateSettings({
+    if (![stock, dias, limite].every(Number.isFinite) || stock < 0 || dias <= 0 || limite < 0) {
+      setSaveError('Revisa los valores: stock y límite no pueden ser negativos, y los días deben ser mayores que cero.');
+      return;
+    }
+    setSaveError(null);
+    try {
+      await updateSettings({
       stock_minimo_global: isNaN(stock) ? settings.stock_minimo_global : stock,
       dias_alerta_morosidad: isNaN(dias) ? settings.dias_alerta_morosidad : dias,
       limite_deuda_global: isNaN(limite) ? settings.limite_deuda_global : limite,
-    });
-    setSavedAlertas(true);
-    setTimeout(() => setSavedAlertas(false), 3000);
+      });
+      setSavedAlertas(true);
+      setTimeout(() => setSavedAlertas(false), 3000);
+    } catch {
+      setSaveError('No se pudieron guardar las alertas.');
+    }
   }
 
-  function handleReset() {
-    resetSettings();
-    setRateInput('36');
-    setIvaInput('16');
-    setNegocio({ nombre: 'Abasto POS', rif: '', direccion: '', telefono: '' });
-    setPagomovil({ banco: '', numero: '', cedula: '' });
-    setMetodos({ efectivo_bs: true, efectivo_usd: true, pagomovil: true, punto_venta: true, mixto: true, fiado: true });
-    setAlertas({ stock_minimo: '5', dias_morosidad: '30', limite_deuda: '5000' });
-    setShowReset(false);
+  async function handleReset() {
+    setSaveError(null);
+    try {
+      await resetSettings();
+      if (!isSupabaseConfigured) {
+        setRateInput('36');
+        setRate(36);
+      }
+      setShowReset(false);
+    } catch {
+      setSaveError('No se pudo restablecer la configuración.');
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-3xl">
+    <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Configuración</h2>
         <p className="text-sm text-slate-500">Parámetros globales del sistema. Los cambios se aplican de inmediato.</p>
       </div>
 
+      {error && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
+          <span>{error}</span>
+          <button type="button" onClick={() => void refreshSettings()} className="font-semibold underline">
+            Reintentar carga
+          </button>
+        </div>
+      )}
+      {saveError && <p className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200" role="alert">{saveError}</p>}
+
+      <SectionTabs
+        tabs={[
+          { id: 'general', label: t('tabs.general') },
+          { id: 'users', label: t('tabs.users') },
+        ]}
+        activeTab={activeTab}
+        onChange={(tab) => setSearchParams(tab === 'general' ? {} : { tab })}
+      />
+
+      <div id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
+      {activeTab === 'general' ? <>
       {/* ── 1. Tasa del día + IVA ── */}
       <Section
         title="💱 Tasa del día e IVA"
-        subtitle="Define la tasa de cambio Bs/USD y el porcentaje de IVA aplicado a las ventas."
+        subtitle={isSupabaseConfigured
+          ? 'La tasa oficial se sincroniza desde el BCV. El IVA se configura aquí.'
+          : 'La tasa manual solo se aplica a la demo local; no representa una cotización oficial verificada.'}
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Tasa del día (Bs por 1 USD)" hint="Se usa en todo el sistema para conversión automática.">
-            <TextInput type="number" value={rateInput} onChange={setRateInput} placeholder="36.00" />
-          </Field>
+          {!isSupabaseConfigured && (
+            <Field label="Tasa del día (Bs por 1 USD)" hint="Valor manual para la demo local.">
+              <TextInput type="number" value={rateInput} onChange={setRateInput} placeholder="36.00" />
+            </Field>
+          )}
           <Field label="IVA (%)" hint="Porcentaje de impuesto sobre ventas. 0 para desactivar.">
             <TextInput type="number" value={ivaInput} onChange={setIvaInput} placeholder="16" />
           </Field>
         </div>
         <div className="mt-1">
           <p className="text-xs text-slate-400">
-            Tasa actual en uso: <span className="font-semibold text-slate-600 dark:text-slate-300">{rate.toFixed(2)} Bs/USD</span>
+            {isSupabaseConfigured ? 'Tasa oficial BCV: ' : 'Tasa local de demo: '}
+            <span className="font-semibold text-slate-600 dark:text-slate-300">{rate > 0 ? `${rate.toFixed(2)} Bs/USD` : 'No disponible'}</span>
             {' · '}IVA actual: <span className="font-semibold text-slate-600 dark:text-slate-300">{settings.iva}%</span>
+            {isSupabaseConfigured && updatedAt > 0 && ` · Consultada: ${new Date(updatedAt).toLocaleString('es-VE')}`}
           </p>
+          {isSupabaseConfigured && (
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+              {isRateLoading && <span className="text-slate-500">Consultando tasa guardada...</span>}
+              {isStale && <span className="font-semibold text-amber-600">La tasa no se ha confirmado recientemente.</span>}
+              {rateError && <span role="alert" className="font-semibold text-red-600">{rateError}</span>}
+              <button type="button" onClick={() => void refreshRate()} className="font-semibold text-primary underline">
+                Volver a consultar
+              </button>
+            </div>
+          )}
         </div>
-        <SaveBtn onClick={saveTasa} saved={savedTasa} />
+        <SaveBtn onClick={saveTasa} saved={savedTasa} disabled={isLoading || isSaving} />
       </Section>
 
       {/* ── 2. Datos del negocio ── */}
@@ -227,7 +336,7 @@ export function Settings() {
             <TextInput value={negocio.telefono} onChange={(v) => setNegocio((p) => ({ ...p, telefono: v }))} placeholder="0212-0000000" />
           </Field>
         </div>
-        <SaveBtn onClick={saveNegocio} saved={savedNegocio} />
+        <SaveBtn onClick={saveNegocio} saved={savedNegocio} disabled={isLoading || isSaving} />
       </Section>
 
       {/* ── 3. Cuenta de Pago Móvil ── */}
@@ -261,7 +370,7 @@ export function Settings() {
             </p>
           </div>
         )}
-        <SaveBtn onClick={savePagomovil} saved={savedPagomovil} />
+        <SaveBtn onClick={savePagomovil} saved={savedPagomovil} disabled={isLoading || isSaving} />
       </Section>
 
       {/* ── 4. Métodos de pago ── */}
@@ -303,7 +412,7 @@ export function Settings() {
             </label>
           ))}
         </div>
-        <SaveBtn onClick={saveMetodos} saved={savedMetodos} />
+        <SaveBtn onClick={saveMetodos} saved={savedMetodos} disabled={isLoading || isSaving} />
       </Section>
 
       {/* ── 5. Alertas y límites ── */}
@@ -346,7 +455,7 @@ export function Settings() {
             />
           </Field>
         </div>
-        <SaveBtn onClick={saveAlertas} saved={savedAlertas} />
+        <SaveBtn onClick={saveAlertas} saved={savedAlertas} disabled={isLoading || isSaving} />
       </Section>
 
       {/* ── 6. Zona de peligro ── */}
@@ -369,6 +478,7 @@ export function Settings() {
             <div className="flex gap-2">
               <button
                 onClick={handleReset}
+                disabled={isLoading || isSaving}
                 className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
               >
                 Sí, restablecer
@@ -385,6 +495,8 @@ export function Settings() {
       </Section>
 
       <RateHistorySection />
+      </> : <UserManagement embedded />}
+      </div>
     </div>
   );
 }
@@ -392,14 +504,21 @@ export function Settings() {
 // ─── Historial de tasas ───────────────────────────────────────────────────────
 
 function RateHistorySection() {
-  const { history } = useRateHistory();
+  const { history, isLoading, error, refreshHistory } = useRateHistory();
 
   if (history.length === 0) {
     return (
       <Section title="Historial de tasas" subtitle="Evolución de la tasa Bs/USD registrada">
-        <p className="text-sm text-slate-400">
-          Aún no hay historial. Actualiza la tasa desde esta página para comenzar a registrar.
-        </p>
+        {error ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-red-700 dark:text-red-300" role="alert">
+            <span>{error}</span>
+            <button type="button" onClick={() => void refreshHistory()} className="font-semibold underline">Reintentar</button>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400">
+            {isLoading ? 'Cargando historial...' : 'Aún no hay historial de tasas disponible.'}
+          </p>
+        )}
       </Section>
     );
   }
@@ -422,6 +541,7 @@ function RateHistorySection() {
   return (
     <Section title="Historial de tasas" subtitle="Últimas actualizaciones de la tasa Bs/USD">
       <div className="space-y-4">
+        {error && <p className="text-sm text-red-700 dark:text-red-300" role="alert">{error}</p>}
         {/* Gráfica */}
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
           <div className="flex items-center justify-between mb-2">

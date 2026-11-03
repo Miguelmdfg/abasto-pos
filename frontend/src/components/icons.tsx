@@ -113,3 +113,13 @@ export function IconHistory(props: IconProps) {
     </svg>
   );
 }
+
+export function IconCash(props: IconProps) {
+  return (
+    <svg {...baseProps(props)}>
+      <rect x="1.5" y="5" width="21" height="14" rx="2.5" />
+      <path d="M12 9.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
+      <path d="M16.5 5.5v-1m-9 1v-1M4 14.5h16" />
+    </svg>
+  );
+}

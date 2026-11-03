@@ -1,9 +1,12 @@
 import { Button, Card } from '@heroui/react';
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSalesHistory, type SaleRecord } from '../lib/sales-history';
 import { useExchangeRate } from '../lib/exchange-rate';
 import { getRateForDate, useRateHistory } from '../lib/rate-history';
+import { SectionTabs } from '../components/SectionTabs';
+import { CashClosures } from './CashClosures';
+import { useI18n } from '../lib/i18n';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -18,16 +21,6 @@ const METODO_LABELS: Record<string, string> = {
   mixto:        'Mixto',
   fiado:        'Fiado',
 };
-
-function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
-  const priceUsd = rate > 0 ? priceBs / rate : 0;
-  return (
-    <>
-      <p className="font-bold text-slate-900 dark:text-white">${priceUsd.toFixed(2)}</p>
-      <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
-    </>
-  );
-}
 
 function moneyBs(value: number): string {
   return `${value.toFixed(2)} Bs`;
@@ -151,7 +144,10 @@ function ModalDetalle({ sale, onClose, rate }: { sale: SaleRecord; onClose: () =
 
 export function SalesHistory() {
   const navigate = useNavigate();
-  const { sales } = useSalesHistory();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useI18n();
+  const activeTab = searchParams.get('tab') === 'closures' ? 'closures' : 'sales';
+  const { sales, refreshError, refreshSales } = useSalesHistory();
   const { rate } = useExchangeRate();
   const { history } = useRateHistory();
 
@@ -225,8 +221,28 @@ export function SalesHistory() {
           </Button>
         </div>
 
+        <SectionTabs
+          tabs={[
+            { id: 'sales', label: t('tabs.sales') },
+            { id: 'closures', label: t('tabs.cashClosures') },
+          ]}
+          activeTab={activeTab}
+          onChange={(tab) => setSearchParams(tab === 'sales' ? {} : { tab })}
+        />
+
+        <div id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`} className="mt-5">
+        {activeTab === 'sales' ? <div className="space-y-4">
+        {refreshError && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200" role="alert">
+            <span>{refreshError}</span>
+            <Button size="sm" variant="secondary" onPress={() => void refreshSales()}>
+              Reintentar
+            </Button>
+          </div>
+        )}
+
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-4">
           {[
             { label: 'Ventas', value: String(filtered.length) },
             { label: 'Monto total', value: moneyBs(totalMonto) },
@@ -241,8 +257,8 @@ export function SalesHistory() {
 
         {/* Filtros */}
         <Card className="border border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
-          <Card.Content className="p-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Card.Content className="p-5">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-500">Buscar ID o cajero</label>
                 <input
@@ -295,7 +311,7 @@ export function SalesHistory() {
 
         {/* Tabla */}
         <Card className="border border-slate-200/80 bg-white/95 dark:border-slate-800 dark:bg-slate-900/95">
-          <Card.Content className="p-0">
+          <Card.Content className="overflow-hidden p-0">
             {sales.length === 0 ? (
               <div className="px-6 py-12 text-center">
                 <p className="text-2xl">🧾</p>
@@ -310,9 +326,10 @@ export function SalesHistory() {
                 </button>
               </div>
             ) : (
-              <>
+              <div className="overflow-x-auto">
+              <div className="min-w-[1000px]">
                 {/* Cabecera */}
-                <div className="grid grid-cols-[1.4fr_1fr_1fr_0.9fr_1.2fr_0.7fr_auto] items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+                <div className="grid grid-cols-[1.4fr_1.1fr_1.5fr_1fr_1.5fr_0.8fr_auto] items-center gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900">
                   <span>ID</span>
                   <span>Fecha</span>
                   <span>Cajero</span>
@@ -322,22 +339,22 @@ export function SalesHistory() {
                   <span></span>
                 </div>
                 {/* Filas */}
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="space-y-2 p-3">
                   {paginated.map((sale) => (
                     <div
                       key={sale.id}
-                      className="grid grid-cols-[1.4fr_1fr_1fr_0.9fr_1.2fr_0.7fr_auto] items-center gap-2 px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                      className="grid grid-cols-[1.4fr_1.1fr_1.5fr_1fr_1.5fr_0.8fr_auto] items-center gap-4 rounded-xl border border-slate-200/80 bg-white px-5 py-4 text-sm transition-colors hover:border-primary/30 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/40"
                     >
                       <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
                         {sale.id}
                       </span>
-                      <span className="text-xs text-slate-500">{formatDate(sale.fecha)}</span>
-                      <span className="truncate font-medium text-slate-800 dark:text-slate-200">{sale.cajero}</span>
+                      <span className="text-xs leading-5 text-slate-500">{formatDate(sale.fecha)}</span>
+                      <span className="truncate font-medium text-slate-800 dark:text-slate-200" title={sale.cajero}>{sale.cajero}</span>
                       <span className="w-fit rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                         {METODO_LABELS[sale.metodo] ?? sale.metodo}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-xs text-slate-500">
+                        <p className="truncate text-xs leading-5 text-slate-500" title={sale.productos.map((product) => product.name).join(', ')}>
                           {sale.productos.slice(0, 2).map(p => p.name).join(', ')}
                           {sale.productos.length > 2 && ` +${sale.productos.length - 2} más`}
                         </p>
@@ -353,7 +370,8 @@ export function SalesHistory() {
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
+              </div>
             )}
           </Card.Content>
 
@@ -372,7 +390,8 @@ export function SalesHistory() {
             </div>
           )}
         </Card>
-
+        </div> : <CashClosures embedded />}
+        </div>
       </div>
     </>
   );

@@ -1,30 +1,32 @@
 import { Button, Card, Dropdown, Spinner } from '@heroui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useI18n } from '../lib/i18n';
 import { useExchangeRate } from '../lib/exchange-rate';
-import { MOCK_PRODUCTS } from '../mocks/products';
+import { useAuth } from '../lib/auth';
+import { SectionTabs } from '../components/SectionTabs';
+import {
+  adjustCatalogStock,
+  canUseDemoCatalog,
+  loadCatalogProducts,
+  type CatalogProduct,
+  upsertCatalogProduct,
+} from '../lib/catalog';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Product = {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  costo: number;
-  stock: number;
-};
+type Product = CatalogProduct;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 const PAGE_SIZE = 8;
+const InventoryImportPanel = lazy(() => import('./InventoryImport').then(({ InventoryImport }) => ({ default: InventoryImport })));
 
 const emptyForm = { name: '', category: '', price: '0', costo: '0', stock: '0' };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
+function formatPriceBsFirst(priceBs: number, rate: number): ReactElement {
   const priceUsd = rate > 0 ? priceBs / rate : 0;
   return (
     <>
@@ -32,12 +34,6 @@ function formatPriceBsFirst(priceBs: number, rate: number): JSX.Element {
       <p className="text-xs text-slate-500">{priceBs.toFixed(2)} Bs</p>
     </>
   );
-}
-
-function getStockLabel(stock: number): string {
-  if (stock <= 0) return 'Sin stock';
-  if (stock <= 5) return 'Stock bajo';
-  return 'En stock';
 }
 
 function getStockClass(stock: number): string {
@@ -69,7 +65,11 @@ function FieldInput({
 
 export function Inventory() {
   const { t } = useI18n();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
   const { rate } = useExchangeRate();
+  const canImport = user?.role === 'dueno';
+  const activeTab = searchParams.get('tab') === 'import' && canImport ? 'import' : 'products';
 
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,34 +85,38 @@ export function Inventory() {
 
   // Formulario de creación/edición
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Edición de stock inline
-  const [stockEditId, setStockEditId] = useState<number | null>(null);
+  const [stockEditId, setStockEditId] = useState<string | null>(null);
   const [stockEditValue, setStockEditValue] = useState('');
+  const [stockEditReason, setStockEditReason] = useState('Ajuste manual');
 
-  useEffect(() => { void loadProducts(); }, []);
-
-  async function loadProducts() {
+  const loadProducts = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/products`);
-      const data = (await res.json().catch(() => [])) as unknown;
-      if (!res.ok) throw new Error('load');
-      setProducts(Array.isArray(data) ? (data as Product[]) : []);
-      setIsFallbackMode(false);
+      setProducts(await loadCatalogProducts());
+      setIsFallbackMode(canUseDemoCatalog);
     } catch {
-      setProducts(MOCK_PRODUCTS);
-      setIsFallbackMode(true);
+      setProducts([]);
+      setIsFallbackMode(false);
       setError(t('inventory.error.load'));
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [t]);
+
+  useEffect(() => {
+    if (activeTab === 'products') void loadProducts();
+  }, [activeTab, loadProducts]);
+
+  useEffect(() => {
+    if (searchParams.get('tab') === 'import' && !canImport) setSearchParams({}, { replace: true });
+  }, [canImport, searchParams, setSearchParams]);
 
   // ── Filtros y paginación ──────────────────────────────────────────────────
 
@@ -141,7 +145,7 @@ export function Inventory() {
       if (sortBy === 'name') return a.name.localeCompare(b.name);
       if (sortBy === 'stock') return b.stock - a.stock;
       if (sortBy === 'price') return b.price - a.price;
-      return b.id - a.id;
+      return b.id.localeCompare(a.id);
     });
     return sorted;
   }, [products, query, categoryFilter, stockFilter, sortBy]);
@@ -171,8 +175,8 @@ export function Inventory() {
     setForm({
       name: product.name,
       category: product.category,
-      price: String(product.price),
-      costo: String(product.costo ?? 0),
+      price: rate > 0 ? (product.price / rate).toFixed(2) : '0',
+      costo: rate > 0 ? ((product.costo ?? 0) / rate).toFixed(2) : '0',
       stock: String(product.stock),
     });
     setShowForm(true);
@@ -190,45 +194,32 @@ export function Inventory() {
     setFormError('');
     const name = form.name.trim();
     const category = form.category.trim();
-    const price = Number(form.price);
-    const costo = Number(form.costo);
+    const priceUsd = Number(form.price);
+    const costoUsd = Number(form.costo);
     const stock = Number(form.stock);
 
     if (!name || !category) { setFormError(t('inventory.form.error.required')); return; }
-    if (!Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0) {
+    if (rate <= 0 || !Number.isFinite(priceUsd) || priceUsd < 0 || !Number.isFinite(costoUsd) || costoUsd < 0 || !Number.isFinite(stock) || stock < 0) {
       setFormError(t('inventory.form.error.invalidNumbers'));
       return;
     }
-
     setIsSaving(true);
     try {
-      const payload = { name, category, price, costo, stock };
-      const url = editingId ? `${API_BASE}/products/${editingId}` : `${API_BASE}/products`;
-      const method = editingId ? 'PUT' : 'POST';
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      await upsertCatalogProduct({
+        id: editingId ?? undefined,
+        name,
+        category,
+        price: priceUsd * rate,
+        costo: costoUsd * rate,
+        stock,
       });
-      if (!res.ok) throw new Error('save');
       await loadProducts();
-    } catch {
-      // Fallback local
-      if (editingId) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === editingId ? { ...p, name, category, price, costo, stock } : p
-          )
-        );
-      } else {
-        const newProduct: Product = { id: Date.now(), name, category, price, costo, stock };
-        setProducts((prev) => [newProduct, ...prev]);
-      }
-      setFormError('');
+      cancelForm();
+    } catch (saveError) {
+      setFormError(saveError instanceof Error ? saveError.message : 'No se pudo guardar el producto.');
     } finally {
       setIsSaving(false);
     }
-    cancelForm();
   }
 
   // ── Stock inline edit ─────────────────────────────────────────────────────
@@ -236,6 +227,7 @@ export function Inventory() {
   function startStockEdit(product: Product) {
     setStockEditId(product.id);
     setStockEditValue(String(product.stock));
+    setStockEditReason('Ajuste manual');
     if (showForm) cancelForm();
   }
 
@@ -245,27 +237,29 @@ export function Inventory() {
       setStockEditId(null);
       return;
     }
+    const reason = stockEditReason.trim();
+    if (!reason) {
+      setError('Indica el motivo del ajuste de stock.');
+      setStockEditId(null);
+      return;
+    }
     const delta = newStock - product.stock;
     try {
-      await fetch(`${API_BASE}/products/stock/${product.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adjust: delta }),
-      });
-    } catch { /* fallback */ }
-    setProducts((prev) =>
-      prev.map((p) => (p.id === product.id ? { ...p, stock: newStock } : p))
-    );
-    setStockEditId(null);
+      await adjustCatalogStock(product.id, delta, reason);
+      await loadProducts();
+      setStockEditId(null);
+    } catch (stockError) {
+      setError(stockError instanceof Error ? stockError.message : 'No se pudo ajustar el stock.');
+    }
   }
 
   // ── Export CSV ────────────────────────────────────────────────────────────
 
   function exportCSV() {
     const rows = processedProducts.map(
-      (p) => `${p.id},${p.name},${p.category},${p.price},${p.costo},${p.stock}`
+      (p) => `${p.id},${p.name},${p.category},${rate > 0 ? (p.price / rate).toFixed(2) : '0.00'},${rate > 0 ? (p.costo / rate).toFixed(2) : '0.00'},${p.stock}`
     );
-    const csv = ['id,name,category,price,costo,stock', ...rows].join('\n');
+    const csv = ['id,name,category,price_usd,costo_usd,stock', ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -305,6 +299,17 @@ export function Inventory() {
           <p className="text-sm text-slate-500">{t('inventory.subtitle')}</p>
         </div>
 
+        <SectionTabs
+          tabs={[
+            { id: 'products', label: t('tabs.products') },
+            ...(canImport ? [{ id: 'import', label: t('tabs.importInventory') }] : []),
+          ]}
+          activeTab={activeTab}
+          onChange={(tab) => setSearchParams(tab === 'products' ? {} : { tab })}
+        />
+
+        <div id={`${activeTab}-panel`} role="tabpanel" aria-labelledby={`${activeTab}-tab`}>
+        {activeTab === 'products' ? <div className="space-y-4">
         {error && (
           <Card className="border border-danger/40 bg-danger/5 shadow-sm">
             <Card.Content className="flex items-center justify-between gap-4 p-4">
@@ -368,14 +373,14 @@ export function Inventory() {
                   placeholder={t('inventory.form.categoryPlaceholder')}
                 />
                 <FieldInput
-                  label="Precio de venta (Bs)"
+                  label="Precio de venta ($)"
                   type="number"
                   value={form.price}
                   onChange={(v) => setForm((p) => ({ ...p, price: v }))}
                   placeholder="0.00"
                 />
                 <FieldInput
-                  label="Costo (Bs)"
+                  label="Costo ($)"
                   type="number"
                   value={form.costo}
                   onChange={(v) => setForm((p) => ({ ...p, costo: v }))}
@@ -397,7 +402,7 @@ export function Inventory() {
                         Number(form.price) > Number(form.costo) ? 'text-success' : 'text-danger'
                       }`}>
                         {(((Number(form.price) - Number(form.costo)) / Number(form.price)) * 100).toFixed(1)}%
-                        &nbsp;·&nbsp;{(Number(form.price) - Number(form.costo)).toFixed(2)} Bs
+                        &nbsp;·&nbsp;${(Number(form.price) - Number(form.costo)).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -423,7 +428,7 @@ export function Inventory() {
         {/* Tabla */}
         <Card className="border border-slate-200/80 bg-white/95 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
           {/* Filtros */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 p-3 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-3 p-4">
             <Dropdown>
               <Dropdown.Trigger className="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-900 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
                 {t('inventory.filter.category')}: {categoryLabel}
@@ -501,6 +506,9 @@ export function Inventory() {
             </span>
           </div>
 
+        </Card>
+
+        <Card className="overflow-hidden border border-slate-200/80 bg-white/95 shadow-sm dark:border-slate-800 dark:bg-slate-900/95">
           <Card.Content className="p-0">
             {isLoading ? (
               <div className="flex items-center gap-3 p-6">
@@ -511,8 +519,9 @@ export function Inventory() {
               <p className="p-6 text-sm text-slate-500">{t('inventory.list.empty')}</p>
             ) : (
               <div className="overflow-x-auto">
+                <div className="min-w-[1000px]">
                 {/* Cabecera */}
-                <div className="grid grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr_0.6fr_1.1fr] items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+                <div className="grid grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr_0.6fr_1.1fr] items-center gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900">
                   <span>{t('inventory.table.product')}</span>
                   <span>{t('inventory.table.category')}</span>
                   <span>Stock</span>
@@ -522,7 +531,7 @@ export function Inventory() {
                   <span className="text-right">{t('inventory.table.actions')}</span>
                 </div>
                 {/* Filas */}
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="space-y-2 p-3">
                   {paginatedProducts.map((product) => {
                     const margen = product.price > 0 && product.costo > 0
                       ? ((product.price - product.costo) / product.price) * 100
@@ -530,7 +539,7 @@ export function Inventory() {
                     return (
                       <div
                         key={product.id}
-                        className="grid grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr_0.6fr_1.1fr] items-center gap-2 px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                        className="grid grid-cols-[1.4fr_1fr_0.6fr_0.7fr_0.7fr_0.6fr_1.1fr] items-center gap-4 rounded-xl border border-slate-200/80 bg-white px-5 py-4 text-sm transition-colors hover:border-primary/30 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/30"
                       >
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-slate-900 dark:text-white">{product.name}</p>
@@ -542,19 +551,38 @@ export function Inventory() {
 
                         {/* Stock editable inline */}
                         {stockEditId === product.id ? (
-                          <input
-                            type="number"
-                            min="0"
-                            value={stockEditValue}
-                            onChange={(e) => setStockEditValue(e.target.value)}
-                            onBlur={() => void commitStockEdit(product)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') void commitStockEdit(product);
-                              if (e.key === 'Escape') setStockEditId(null);
-                            }}
-                            autoFocus
-                            className="w-16 rounded-lg border border-primary px-2 py-1 text-xs font-bold focus:outline-none"
-                          />
+                          <div className="space-y-1">
+                            <input
+                              type="number"
+                              min="0"
+                              value={stockEditValue}
+                              onChange={(e) => setStockEditValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') void commitStockEdit(product);
+                                if (e.key === 'Escape') setStockEditId(null);
+                              }}
+                              autoFocus
+                              className="w-20 rounded-lg border border-primary px-2 py-1 text-xs font-bold focus:outline-none"
+                            />
+                            <input
+                              type="text"
+                              value={stockEditReason}
+                              onChange={(e) => setStockEditReason(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') void commitStockEdit(product);
+                                if (e.key === 'Escape') setStockEditId(null);
+                              }}
+                              placeholder="Motivo"
+                              className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void commitStockEdit(product)}
+                              className="text-[10px] font-semibold text-primary"
+                            >
+                              Guardar
+                            </button>
+                          </div>
                         ) : (
                           <button
                             onClick={() => startStockEdit(product)}
@@ -595,6 +623,7 @@ export function Inventory() {
                   })}
                 </div>
               </div>
+              </div>
             )}
           </Card.Content>
 
@@ -613,7 +642,10 @@ export function Inventory() {
             </div>
           )}
         </Card>
-
+        </div> : <Suspense fallback={<p className="py-8 text-center text-sm text-slate-500" role="status">Cargando importación...</p>}>
+          <InventoryImportPanel embedded />
+        </Suspense>}
+        </div>
       </div>
     </div>
   );

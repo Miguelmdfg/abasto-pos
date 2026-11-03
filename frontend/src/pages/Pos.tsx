@@ -1,5 +1,5 @@
 import { Button, Card, Spinner } from '@heroui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebts, type DebtItem } from '../lib/debts-context';
 import { useExchangeRate } from '../lib/exchange-rate';
@@ -7,19 +7,17 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useRateHistory } from '../lib/rate-history';
 import { useSettings } from '../lib/settings-context';
-import { MOCK_PRODUCTS } from '../mocks/products';
+import { canUseDemoCatalog, loadCatalogProducts, type CatalogProduct } from '../lib/catalog';
 import { useSalesHistory } from '../lib/sales-history';
 import { useCashierShift } from '../lib/cashier-shift';
+import { createRemoteSale, type SalePaymentInput } from '../lib/sales-api';
+import { createRemoteCreditSale } from '../lib/credit-api';
+import { closeRemoteShift, openRemoteShift } from '../lib/shift-api';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Product = {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-};
+type Product = CatalogProduct;
 
 type CartItem = Product & { qty: number };
 type PaymentMethod = 'efectivo_bs' | 'efectivo_usd' | 'pagomovil' | 'punto_venta' | 'mixto' | 'fiado';
@@ -32,8 +30,6 @@ type PagoMovilData = {
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 const BANCOS_VE = [
   'Banesco', 'Banco de Venezuela', 'Mercantil', 'BBVA Provincial',
@@ -241,17 +237,18 @@ function ModalFiado({
 }: {
   debts: DebtItem[];
   total: number;
-  onConfirm: (clientId: number) => void;
+  onConfirm: (clientId: string | number) => void;
   onCancel: () => void;
-  onAddClient: (nombre: string, telefono: string, limite: number) => DebtItem;
+  onAddClient: (nombre: string, telefono: string, limite: number) => Promise<DebtItem>;
 }) {
   const [tab, setTab] = useState<'search' | 'new'>('search');
   const [query, setQuery] = useState('');
-  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | number | null>(null);
   const [newNombre, setNewNombre] = useState('');
   const [newTelefono, setNewTelefono] = useState('');
   const [newLimite, setNewLimite] = useState('5000');
   const [err, setErr] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -265,7 +262,7 @@ function ModalFiado({
 
   function moneyBs(v: number) { return `${v.toFixed(2)} Bs`; }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     setErr('');
     if (tab === 'search') {
       if (!selectedClientId) { setErr('Selecciona un cliente.'); return; }
@@ -274,15 +271,22 @@ function ModalFiado({
       if (!newNombre.trim()) { setErr('El nombre es obligatorio.'); return; }
       const limite = Number(newLimite);
       if (isNaN(limite) || limite <= 0) { setErr('Ingresa un límite válido.'); return; }
-      const client = onAddClient(newNombre.trim(), newTelefono.trim(), limite);
-      onConfirm(client.id);
+      setIsSaving(true);
+      try {
+        const client = await onAddClient(newNombre.trim(), newTelefono.trim(), limite);
+        onConfirm(client.id);
+      } catch (clientError) {
+        setErr(clientError instanceof Error ? clientError.message : 'No se pudo guardar el cliente.');
+      } finally {
+        setIsSaving(false);
+      }
     }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <h3 className="mb-1 text-lg font-extrabold text-slate-900 dark:text-white">📋 Venta Fiada</h3>
+        <h3 className="mb-1 text-lg font-extrabold text-slate-900 dark:text-white">📋 Venta con Nota de crédito</h3>
         <p className="mb-5 text-sm text-slate-500">
           Monto: <span className="font-bold text-slate-800 dark:text-white">{moneyBs(total)}</span>
         </p>
@@ -370,9 +374,9 @@ function ModalFiado({
             className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
             Cancelar
           </button>
-          <button type="button" onClick={handleConfirm}
-            className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90">
-            Confirmar fiado
+          <button type="button" onClick={() => void handleConfirm()} disabled={isSaving}
+            className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-60">
+            {isSaving ? 'Guardando...' : 'Confirmar nota de crédito'}
           </button>
         </div>
       </div>
@@ -382,7 +386,15 @@ function ModalFiado({
 
 // ─── Banner de venta exitosa ──────────────────────────────────────────────────
 
-function BannerVentaExitosa({ saleId, onClose }: { saleId: string; onClose: () => void }) {
+function BannerVentaExitosa({
+  saleId,
+  refreshWarning,
+  onClose,
+}: {
+  saleId: string;
+  refreshWarning: boolean;
+  onClose: () => void;
+}) {
   const navigate = useNavigate();
 
   return (
@@ -395,6 +407,11 @@ function BannerVentaExitosa({ saleId, onClose }: { saleId: string; onClose: () =
         </div>
         <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">¡Venta registrada!</h3>
         <p className="mt-1 text-sm text-slate-500">La venta fue procesada correctamente.</p>
+        {refreshWarning && (
+          <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-left text-xs font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-200" role="status">
+            La venta quedó guardada, pero no se pudo actualizar el historial. Vuelve a intentarlo desde el historial.
+          </p>
+        )}
 
         <div className="mt-4 rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">ID de venta</p>
@@ -417,6 +434,89 @@ function BannerVentaExitosa({ saleId, onClose }: { saleId: string; onClose: () =
             className="w-full rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             Nueva venta
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModalAperturaCaja({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: (input: { initialAmountBs: number; initialAmountUsd: number }) => void;
+  onCancel: () => void;
+}) {
+  const [initialAmountBs, setInitialAmountBs] = useState('0');
+  const [initialAmountUsd, setInitialAmountUsd] = useState('0');
+  const [error, setError] = useState('');
+
+  function handleConfirm() {
+    const bs = Number(initialAmountBs);
+    const usd = Number(initialAmountUsd);
+
+    if (!Number.isFinite(bs) || !Number.isFinite(usd) || bs < 0 || usd < 0) {
+      setError('Los montos iniciales deben ser números válidos y no negativos.');
+      return;
+    }
+
+    setError('');
+    onConfirm({ initialAmountBs: bs, initialAmountUsd: usd });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <h3 className="mb-1 text-lg font-extrabold text-slate-900 dark:text-white">📪 Apertura de caja</h3>
+        <p className="mb-5 text-sm text-slate-500">Ingresa el fondo inicial para comenzar el turno actual.</p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">Fondo inicial en Bs</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={initialAmountBs}
+              onChange={(e) => setInitialAmountBs(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-400">Fondo inicial en USD</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={initialAmountUsd}
+              onChange={(e) => setInitialAmountUsd(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </div>
+
+          {error && (
+            <p className="rounded-xl bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-600 dark:bg-red-900/30 dark:text-red-400">
+              ⚠️ {error}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-bold text-white hover:opacity-90"
+          >
+            Abrir caja
           </button>
         </div>
       </div>
@@ -506,6 +606,7 @@ function ModalCierreCaja({
   const [cierresParciales, setCierresParciales] = useState<CierreParcial[]>([]);
   const [nombreParcial, setNombreParcial] = useState('Cierre 1');
   const [validationError, setValidationError] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const efectivoDivisasNum = parseAmount(efectivoDivisas);
   const efectivoBolivaresNum = parseAmount(efectivoBolivares);
@@ -614,20 +715,27 @@ function ModalCierreCaja({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 my-8">
+      <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 my-8">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-200 p-5 dark:border-slate-800">
           <div>
-            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">📪 Cierre de Caja</h3>
-            <p className="text-sm text-slate-500">Cajero: {cajero} | Fecha: {new Date().toLocaleDateString('es-VE')}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">Fin del turno</p>
+            <h3 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">Cerrar caja</h3>
+            <p className="text-sm text-slate-500">{cajero} · {new Date().toLocaleDateString('es-VE')}</p>
           </div>
           <button onClick={onCancel} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800">✕</button>
         </div>
 
-        <div className="p-5 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto p-5">
           {/* Resumen automático de ventas */}
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 dark:border-primary/20">
-            <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-primary">Resumen automático de ventas</h4>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-primary">Resumen del turno</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Ventas registradas automáticamente</p>
+              </div>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">Paso 1 de 2</span>
+            </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <div>
                 <p className="text-xs text-slate-500">Subtotal productos</p>
@@ -648,18 +756,57 @@ function ModalCierreCaja({
             </div>
           </div>
 
+          {/* Conteo principal */}
+          <div className="rounded-xl border-2 border-primary/40 p-4 dark:border-primary/30">
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">Paso 2</p>
+              <h4 className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">Cuenta el dinero de la caja</h4>
+              <p className="mt-1 text-sm text-slate-500">Ingresa solo lo que tienes físicamente al finalizar el turno.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Efectivo en dólares ($)</label>
+                <input type="number" min="0" step="0.01" value={efectivoDivisas} onChange={(e) => setEfectivoDivisas(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-base font-bold focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-500">Efectivo en bolívares (Bs)</label>
+                <input type="number" min="0" step="0.01" value={efectivoBolivares} onChange={(e) => setEfectivoBolivares(e.target.value)} placeholder="0.00" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-base font-bold focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-slate-500">Dólares convertidos</p>
+                <p className="font-bold text-slate-900 dark:text-white">{efectivoDivisasBs.toFixed(2)} Bs</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Total contado</p>
+                <p className="font-bold text-slate-900 dark:text-white">{totalCajaActual.toFixed(2)} Bs</p>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-xs text-slate-500">Diferencia estimada</p>
+                <p className={`font-bold ${diferencia === 0 ? 'text-success' : diferencia > 0 ? 'text-warning' : 'text-danger'}`}>
+                  {diferencia > 0 ? '+' : ''}{diferencia.toFixed(2)} Bs
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Detalle opcional */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700">
+            <button type="button" onClick={() => setShowAdvanced((value) => !value)} className="flex w-full items-center justify-between p-4 text-left">
+              <span>
+                <span className="block text-sm font-bold text-slate-800 dark:text-slate-200">Agregar detalle del cierre</span>
+                <span className="mt-1 block text-xs text-slate-500">Medios electrónicos, cierres parciales y distribución de efectivo</span>
+              </span>
+              <span className="text-sm font-bold text-primary">{showAdvanced ? 'Ocultar' : 'Opcional'}</span>
+            </button>
+          </div>
+
+          {showAdvanced && <>
           {/* Entradas manuales */}
           <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-            <h4 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Cuadre de caja (entradas manuales)</h4>
+            <h4 className="mb-3 text-sm font-bold text-slate-700 dark:text-slate-300">Otros medios de pago</h4>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-500">Efectivo en divisas (USD)</label>
-                <input type="number" value={efectivoDivisas} onChange={(e) => setEfectivoDivisas(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-500">Efectivo en bolívares</label>
-                <input type="number" value={efectivoBolivares} onChange={(e) => setEfectivoBolivares(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
-              </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-500">Punto de venta</label>
                 <input type="number" value={puntoVenta} onChange={(e) => setPuntoVenta(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
@@ -674,15 +821,7 @@ function ModalCierreCaja({
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700 md:grid-cols-4">
-              <div>
-                <p className="text-xs text-slate-500">Divisas en Bs (automático)</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{efectivoDivisasBs.toFixed(2)} Bs</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Total caja actual</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{totalCajaActual.toFixed(2)} Bs</p>
-              </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700 md:grid-cols-3">
               <div>
                 <p className="text-xs text-slate-500">Parciales acumulados</p>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">{totalCajaParciales.toFixed(2)} Bs</p>
@@ -776,6 +915,7 @@ function ModalCierreCaja({
               Estado: {estadoCuadre === 'cuadrado' ? 'Caja cuadrada' : estadoCuadre === 'sobrante' ? 'Sobrante' : 'Faltante'}
             </p>
           </div>
+          </>}
 
           {hasPendingCart && (
             <div className="rounded-xl border border-warning/30 bg-warning/5 p-4 dark:border-warning/20">
@@ -811,10 +951,10 @@ export function Pos() {
   const { t } = useI18n();
   const { rate, updatedAt, isStale } = useExchangeRate();
   const { pushRate } = useRateHistory();
-  const { sales, addSale } = useSalesHistory();
-  const { addShift } = useCashierShift();
-  const { debts, addClient, addDebt } = useDebts();
-  const { settings } = useSettings();
+  const { sales, refreshSales } = useSalesHistory();
+  const { addShift, currentShift, isLoadingCurrentShift, refreshCurrentShift } = useCashierShift();
+  const { debts, addClient, refreshDebts } = useDebts();
+  const { settings, isLoading: isSettingsLoading, error: settingsError } = useSettings();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -826,8 +966,10 @@ export function Pos() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [showPagoMovilModal, setShowPagoMovilModal] = useState(false);
   const [showFiadoModal, setShowFiadoModal] = useState(false);
+  const [showAperturaModal, setShowAperturaModal] = useState(false);
   const [showCierreModal, setShowCierreModal] = useState(false);
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
+  const [salesRefreshWarning, setSalesRefreshWarning] = useState(false);
   const [catalogPage, setCatalogPage] = useState(1);
   const CATALOG_PAGE_SIZE = 12;
   const cashierName = user?.name ?? 'Cajero';
@@ -873,25 +1015,23 @@ export function Pos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function loadProducts() {
+  const loadProducts = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/products`);
-      const data = (await res.json().catch(() => [])) as unknown;
-      if (!res.ok) throw new Error('load');
-      setProducts(Array.isArray(data) ? (data as Product[]) : []);
-      setIsFallbackMode(false);
+      const catalog = await loadCatalogProducts();
+      setProducts(catalog);
+      setIsFallbackMode(canUseDemoCatalog);
     } catch {
-      setProducts(MOCK_PRODUCTS);
-      setIsFallbackMode(true);
+      setProducts([]);
+      setIsFallbackMode(false);
       setError(t('pos.error.loadProducts'));
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [t]);
 
-  useEffect(() => { void loadProducts(); }, []);
+  useEffect(() => { void loadProducts(); }, [loadProducts]);
 
   const filteredProducts = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -915,9 +1055,37 @@ export function Pos() {
     return filteredProducts.slice(start, start + CATALOG_PAGE_SIZE);
   }, [filteredProducts, catalogPage]);
 
-  const updatedLabel = new Date(updatedAt).toLocaleString('es-VE', {
-    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-  });
+  const updatedLabel = updatedAt > 0
+    ? new Date(updatedAt).toLocaleString('es-VE', {
+      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    })
+    : 'Pendiente de tasa oficial BCV';
+
+  async function openShift(input: { initialAmountBs: number; initialAmountUsd: number }) {
+    if (currentShift) {
+      setError('Ya tienes una caja abierta. No puedes abrir otra turno al mismo tiempo.');
+      setShowAperturaModal(false);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setShowAperturaModal(false);
+    setError('');
+
+    try {
+      const shiftCode = `CAJA-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Date.now().toString().slice(-6)}`;
+      await openRemoteShift({
+        code: shiftCode,
+        initialAmountBs: input.initialAmountBs,
+        initialAmountUsd: input.initialAmountUsd,
+      });
+      await refreshCurrentShift();
+    } catch (openError) {
+      setError(openError instanceof Error ? openError.message : 'No se pudo abrir la caja.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   function addToCart(product: Product) {
     setCart((prev) => {
@@ -928,7 +1096,7 @@ export function Pos() {
     });
   }
 
-  function updateQty(productId: number, delta: number) {
+  function updateQty(productId: string, delta: number) {
     setCart((prev) =>
       prev
         .map((item) => {
@@ -942,7 +1110,15 @@ export function Pos() {
 
   function handleCheckout() {
     setError('');
+    if (isSettingsLoading || settingsError) {
+      setError(settingsError ?? 'Espera a que se cargue la configuración compartida antes de registrar ventas.');
+      return;
+    }
     if (cart.length === 0) { setError(t('pos.error.emptyCart')); return; }
+    if (!Number.isFinite(rate) || rate <= 0) {
+      setError('No hay una tasa oficial BCV válida disponible; no se puede registrar la venta.');
+      return;
+    }
     if (!paymentMethod) { setError(t('pos.error.noPayment')); return; }
     if (!enabledPaymentMethods[paymentMethod]) {
       setError('Este método de pago está deshabilitado en configuración.');
@@ -960,81 +1136,110 @@ export function Pos() {
   }
 
   async function submitSale(extra: Partial<PagoMovilData>) {
+    if (!currentShift) {
+      setError('Debes tener una caja abierta para registrar ventas.');
+      return;
+    }
     setIsSubmitting(true);
     setShowPagoMovilModal(false);
-
-    // Guardar en historial local (siempre funciona)
-    const record = addSale({
-      cajero: cashierName,
-      metodo: paymentMethod!,
-      total,
-      tasa: rate,
-      productos: cart.map((item) => ({
-        id: item.id,
-        name: item.name,
-        qty: item.qty,
-        price: item.price,
-      })),
-      referencia: extra.referencia,
-      banco: extra.banco,
-      monto_efectivo: extra.monto_efectivo ? Number(extra.monto_efectivo) : undefined,
-      moneda_efectivo: extra.moneda_efectivo,
-    });
-
-    // Intentar enviar al backend (silencioso si falla)
     try {
-      const body: Record<string, unknown> = {
-        sale_id: record.id,
-        cajero: cashierName,
-        productos: cart.map((item) => ({ id: item.id, qty: item.qty })),
-        metodo: paymentMethod,
-        total,
-      };
-      if (extra.referencia) body.referencia = extra.referencia;
-      if (extra.banco) body.banco = extra.banco;
-      if (extra.monto_efectivo) body.monto_efectivo = Number(extra.monto_efectivo);
-      if (extra.moneda_efectivo) body.moneda_efectivo = extra.moneda_efectivo;
+      const saleCode = `VTA-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Date.now().toString().slice(-6)}`;
+      const cashAmount = extra.monto_efectivo ? Number(extra.monto_efectivo) : 0;
+      const cashAmountBs = extra.moneda_efectivo === 'usd' ? cashAmount * rate : cashAmount;
+      const paymentMethodCode = paymentMethod === 'efectivo_bs' ? 'EFECTIVO_BS'
+        : paymentMethod === 'efectivo_usd' ? 'EFECTIVO_USD'
+        : paymentMethod === 'pagomovil' ? 'PAGO_MOVIL'
+        : paymentMethod === 'punto_venta' ? 'PUNTO_VENTA'
+        : 'TRANSFERENCIA';
+      const payment: SalePaymentInput[] = paymentMethod === 'mixto'
+        ? [
+            {
+              method: paymentMethodCode,
+              amount: Math.max(0, total - cashAmountBs),
+              currency: 'BS' as const,
+              amount_bs: Math.max(0, total - cashAmountBs),
+              reference: extra.referencia,
+              bank: extra.banco,
+            },
+            ...(cashAmount > 0 ? [{
+              method: extra.moneda_efectivo === 'usd' ? 'EFECTIVO_USD' as const : 'EFECTIVO_BS' as const,
+              amount: cashAmount,
+              currency: extra.moneda_efectivo === 'usd' ? 'USD' as const : 'BS' as const,
+              amount_bs: cashAmountBs,
+              ...(extra.moneda_efectivo === 'usd' ? { exchange_rate_snapshot: rate } : {}),
+            }] : []),
+          ]
+        : [{
+            method: paymentMethodCode,
+            amount: paymentMethod === 'efectivo_usd' ? total / rate : total,
+            currency: paymentMethod === 'efectivo_usd' ? 'USD' as const : 'BS' as const,
+            amount_bs: total,
+            ...(paymentMethod === 'efectivo_usd' ? { exchange_rate_snapshot: rate } : {}),
+            reference: extra.referencia,
+            bank: extra.banco,
+          }];
 
-      await fetch(`${API_BASE}/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+      if (payment.some((item) => item.amount_bs <= 0)) {
+        throw new Error('Los montos del pago mixto deben cubrir el total de la venta.');
+      }
+
+      const record = await createRemoteSale({
+        code: saleCode,
+        items: cart.map((item) => ({ product_id: item.id, quantity: item.qty })),
+        payments: payment,
+        exchangeRateBcv: rate,
       });
-    } catch {
-      // silencioso
+      setLastSaleId(record.code);
+      setSalesRefreshWarning(false);
+      setCart([]);
+      setPaymentMethod(null);
+      setSalesRefreshWarning(!(await refreshSales()));
+      await loadProducts();
+    } catch (saleError) {
+      setError(saleError instanceof Error ? saleError.message : 'No se pudo registrar la venta.');
     } finally {
       setIsSubmitting(false);
     }
-
-    setLastSaleId(record.id);
-    setCart([]);
-    setPaymentMethod(null);
-    await loadProducts();
   }
 
-  async function submitFiado(clientId: number) {
+  async function submitFiado(clientId: string | number) {
     setShowFiadoModal(false);
+    if (!Number.isFinite(rate) || rate <= 0) {
+      setError('No hay una tasa oficial BCV válida disponible; no se puede registrar la venta.');
+      return;
+    }
+    if (typeof clientId !== 'string' || !isSupabaseConfigured) {
+      setError('Las notas de crédito solo están disponibles cuando se configura el backend persistente.');
+      return;
+    }
+    if (!currentShift) {
+      setError('Debes tener una caja abierta para registrar ventas.');
+      return;
+    }
     setIsSubmitting(true);
-    const record = addSale({
-      cajero: cashierName,
-      metodo: 'fiado',
-      total,
-      tasa: rate,
-      productos: cart.map((item) => ({ id: item.id, name: item.name, qty: item.qty, price: item.price })),
-    });
-    addDebt(clientId, total, record.id);
+    setError('');
     try {
-      await fetch(`${API_BASE}/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sale_id: record.id, cajero: cashierName, productos: cart.map((i) => ({ id: i.id, qty: i.qty })), metodo: 'fiado', total, cliente_id: clientId }),
+      const timestamp = Date.now();
+      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const sale = await createRemoteCreditSale({
+        code: `VTA-${date}-${timestamp.toString().slice(-6)}`,
+        creditNoteCode: `NC-${date}-${timestamp.toString().slice(-6)}`,
+        customerId: clientId,
+        items: cart.map((item) => ({ product_id: item.id, quantity: item.qty })),
+        exchangeRateBcv: rate,
       });
-    } catch { /* silencioso */ }
-    setIsSubmitting(false);
-    setLastSaleId(record.id);
-    setCart([]);
-    setPaymentMethod(null);
-    await loadProducts();
+      setLastSaleId(sale.code);
+      setSalesRefreshWarning(false);
+      setCart([]);
+      setPaymentMethod(null);
+      setSalesRefreshWarning(!(await refreshSales()));
+      await refreshDebts();
+      await loadProducts();
+    } catch (saleError) {
+      setError(saleError instanceof Error ? saleError.message : 'No se pudo registrar la venta a crédito.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const PAYMENT_METHODS: { key: PaymentMethod; label: string; icon: string }[] = [
@@ -1043,7 +1248,7 @@ export function Pos() {
     { key: 'pagomovil', label: 'Pago Móvil', icon: '📱' },
     { key: 'punto_venta', label: 'Punto de Venta', icon: '🏪' },
     { key: 'mixto', label: 'Pago Mixto', icon: '🔀' },
-    { key: 'fiado', label: 'Fiado', icon: '📋' },
+    { key: 'fiado', label: 'Nota de crédito', icon: '📋' },
   ];
   const visiblePaymentMethods = PAYMENT_METHODS.filter(({ key }) => enabledPaymentMethods[key]);
 
@@ -1074,10 +1279,24 @@ export function Pos() {
         />
       )}
 
+      {showAperturaModal && (
+        <ModalAperturaCaja
+          onConfirm={(input) => void openShift(input)}
+          onCancel={() => {
+            setShowAperturaModal(false);
+            setError('');
+          }}
+        />
+      )}
+
       {lastSaleId && (
         <BannerVentaExitosa
           saleId={lastSaleId}
-          onClose={() => setLastSaleId(null)}
+          refreshWarning={salesRefreshWarning}
+          onClose={() => {
+            setLastSaleId(null);
+            setSalesRefreshWarning(false);
+          }}
         />
       )}
 
@@ -1105,7 +1324,7 @@ export function Pos() {
                     {t('rate.label')}
                   </p>
                   <p className={`text-lg font-extrabold ${isStale ? 'text-warning' : 'text-slate-900 dark:text-white'}`}>
-                    {rate.toFixed(2)} Bs/USD
+                    {rate > 0 ? `${rate.toFixed(2)} Bs/USD` : 'No disponible'}
                   </p>
                   <p className={`text-xs font-medium ${isStale ? 'text-warning' : 'text-slate-400'}`}>
                     {t('rate.updatedAt')}: {updatedLabel}
@@ -1271,11 +1490,33 @@ export function Pos() {
               <Button
                 variant="primary"
                 fullWidth
-                isDisabled={isSubmitting || cart.length === 0}
+                isDisabled={isLoadingCurrentShift || isSubmitting || (!currentShift && cart.length === 0)}
                 onPress={handleCheckout}
               >
-                {isSubmitting ? t('pos.checkout.loading') : t('pos.checkout.action')}
+                {isLoadingCurrentShift
+                  ? 'Verificando caja...'
+                  : isSubmitting
+                    ? t('pos.checkout.loading')
+                    : currentShift
+                      ? t('pos.checkout.action')
+                      : 'Abrir caja para vender'}
               </Button>
+
+              {!isLoadingCurrentShift && currentShift && (
+                <p className="text-xs text-slate-500">
+                  Turno {currentShift.code} · Fondo: {currentShift.initial_amount_usd.toFixed(2)} USD + {currentShift.initial_amount_bs.toFixed(2)} Bs
+                </p>
+              )}
+
+              {!isLoadingCurrentShift && !currentShift && (
+                <button
+                  type="button"
+                  onClick={() => setShowAperturaModal(true)}
+                  className="w-full rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  Abrir caja
+                </button>
+              )}
 
               <Button
                 variant="secondary"
@@ -1297,8 +1538,22 @@ export function Pos() {
           cajero={cashierName}
           salesSummary={cierreSalesSummary}
           hasPendingCart={cart.length > 0}
-          onConfirm={(data) => {
+          onConfirm={async (data) => {
             setShowCierreModal(false);
+            if (isSupabaseConfigured) {
+              try {
+                await closeRemoteShift({
+                  countedAmountBs: data.efectivoBolivares,
+                  countedAmountUsd: data.efectivoDivisas,
+                  exchangeRateBcv: rate,
+                });
+                await refreshCurrentShift();
+                return;
+              } catch (closeError) {
+                setError(closeError instanceof Error ? closeError.message : 'No se pudo cerrar la caja.');
+                return;
+              }
+            }
             addShift({
               cajero: data.cajero,
               subtotalProductos: data.subtotalProductos,
